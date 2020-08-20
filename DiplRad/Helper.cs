@@ -102,7 +102,7 @@ namespace DiplRad
         public static uint GetMessageSizeFromBoolArray(List<bool> boolList)
         {
             uint ret = 0;
-            for (int i = 0; i <= 15; i++)
+            for (int i = 0; i <= 31; i++)
             {
                 ret <<= 1;
                 if (boolList[i])

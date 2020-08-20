@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 
 namespace DiplRad
 {
@@ -20,14 +21,6 @@ namespace DiplRad
         internal int currentXCoord = 1;
         internal int currentYCoord = 0;
 
-
-
-        public enum ColorType
-        {
-            RED = 0,
-            BLUE = 1,
-            GREEN = 2,
-        }
         #endregion Fields
 
         #region Methods
@@ -35,6 +28,20 @@ namespace DiplRad
         // Constructor
         public PITEncryptor(string outputPath) : base(outputPath)
         {
+            lsbUsed = 2;
+        }
+
+        // Constructor
+        public PITEncryptor()
+        {
+        }
+
+        //
+        // LSB count cannot be changed for PIT.
+        //
+        internal override void SetLSBCount(int value)
+        {
+            return;
         }
 
         //
@@ -63,11 +70,12 @@ namespace DiplRad
                 currentYCoord = 0;
             }
 
-            if(currentXCoord > picture.Width)
+            if(currentXCoord >= picture.Width)
             {
                 throw new Exception("Picture is not big enough for this message");
             }
 
+            
             return picture.GetPixel(currentXCoord, currentYCoord);
         }
 
@@ -179,10 +187,12 @@ namespace DiplRad
         //
         // Main function used for encryption
         //
-        internal override void EncryptPicture(string picturePath, string messagePath)
+        internal override string EncryptPicture(string picturePath, string messagePath)
         {
-            var messageInBits = ConvertTxtToBitArray(messagePath, out messageSize);
+            encryptionMessage = new EncryptionMessage(messagePath, insertMessageSizeAtBeggining: false);
+
             picture = new Bitmap(picturePath);
+            double textPercent = encryptionMessage.GetMessageSize() / 100.0;
 
             // Use first 8 pixels in the first row to write message size.
             // We are using 2 LSBs per pixel color, that means that we are storing 48bits.
@@ -199,57 +209,65 @@ namespace DiplRad
             // Determine which channel will be indicator.
             DelegateColorTypesToChannels();
 
+            int percent = 0;
             var currentBit = 0;
-            while (currentBit < messageInBits.Count)
+            while (currentBit < encryptionMessage.GetMessageSize())
             {
                 Color currentPixel = GetNextPixel();
 
                 bool populateFirstChannel = (GetPixelColor(currentPixel, IndicatorChannel) & 0x02) != 0;
                 bool populateSecondChannel = (GetPixelColor(currentPixel, IndicatorChannel) & 0x01) != 0;
 
-                int firstChannelColor = 0;
-                int secondChannelColor = 0;
+                int firstChannelColor = GetPixelColor(currentPixel, FirstChannel);
+                int secondChannelColor = GetPixelColor(currentPixel, SecondChannel);
 
                 if (populateFirstChannel)
                 {
-                    firstChannelColor = GetPixelColor(currentPixel, FirstChannel);
                     firstChannelColor = firstChannelColor & 0xFC;
 
-                    var firstChannelModification = (messageInBits[currentBit++] ? 1 : 0) << 1;
-                    if (currentBit < messageInBits.Count)
+                    var firstChannelModification = encryptionMessage.GetNextBit() << 1;
+                    if (currentBit < encryptionMessage.GetMessageSize())
                     {
-                        firstChannelModification += messageInBits[currentBit++] ? 1 : 0;
+                        firstChannelModification += encryptionMessage.GetNextBit();
                     }
 
                     firstChannelColor = firstChannelColor | firstChannelModification;
                 }
 
-                if (populateSecondChannel && currentBit < messageInBits.Count)
+                if (populateSecondChannel && currentBit < encryptionMessage.GetMessageSize())
                 {
-                    secondChannelColor = GetPixelColor(currentPixel, FirstChannel);
                     secondChannelColor = secondChannelColor & 0xFC;
 
-                    var secondChannelModification = (messageInBits[currentBit++] ? 1 : 0) << 1;
-                    if (currentBit < messageInBits.Count)
+                    var secondChannelModification = encryptionMessage.GetNextBit() << 1;
+                    if (currentBit < encryptionMessage.GetMessageSize())
                     {
-                        secondChannelModification += messageInBits[currentBit++] ? 1 : 0;
+                        secondChannelModification += encryptionMessage.GetNextBit();
                     }
 
                     secondChannelColor = secondChannelColor | secondChannelModification;
                 }
 
                 SetCurrentPixel(firstChannelColor, secondChannelColor);
+                if (currentBit >= textPercent)
+                {
+                    percent++;
+                    textPercent += encryptionMessage.GetMessageSize() / 100.0;
+                    parentForm.SetCurrentProgress(percent);
+                }
             }
 
-            var outputFileName = outputPath + "PITTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".png";
+            parentForm.SetCurrentProgress(100);
+            var outputFileName = outputPath + "\\PITTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".png";
             picture.Save(outputFileName);
             Console.WriteLine(String.Format("New file created. File: {0}", outputFileName));
+
+            return outputFileName;
         }
 
         //
         // Main function used for decryption.
         //
-        internal override void DecryptPicture(string picturePath)
+        public override string DecryptPicture(string picturePath, string outputPath)
         {
             List<Boolean> messageInBits =  new List<Boolean>();
 
@@ -270,7 +288,9 @@ namespace DiplRad
             DelegateColorTypesToChannels();
             messageInBits.Clear();
 
+            int percent = 0;
             ulong currentBit = 0;
+            double textPercent = messageSize / 100.0;
             while (currentBit < messageSize)
             {
                 Color currentPixel = GetNextPixel();
@@ -311,9 +331,19 @@ namespace DiplRad
                     messageInBits.Add((secondChannelColor & 0x01) != 0);
                     currentBit++;
                 }
+
+                if (currentBit >= textPercent)
+                {
+                    percent++;
+                    textPercent += messageSize / 100.0;
+                    parentForm.SetCurrentProgress(percent);
+                }
             }
 
-            Console.WriteLine(Helper.CreateStringFromBoolArray(messageInBits));
+            parentForm.SetCurrentProgress(100);
+            var outputFileName = outputPath + "\\PITDecryptionTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".txt";
+            File.WriteAllText(outputFileName, Helper.CreateStringFromBoolArray(messageInBits));
+            return outputFileName;
         }
         #endregion Methods
     }

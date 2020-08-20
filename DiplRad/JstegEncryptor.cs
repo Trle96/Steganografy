@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms.DataVisualization.Charting;
 using static DiplRad.YCbCrPixel;
 
 namespace DiplRad
@@ -90,7 +93,7 @@ namespace DiplRad
 
         private static readonly byte ControlFlag = 0xFF;
         private static readonly byte SOI = 0xD8;
-        private static readonly byte EOI = 0xD9;        
+        private static readonly byte EOI = 0xD9;
         private static readonly byte APP0 = 0xE0;
         private static readonly byte[] APP0Length = { 0x00, 0x10 };
         private static readonly byte[] JFIF = { 0x4A, 0x46, 0x49, 0x46, 0x00 };
@@ -125,15 +128,14 @@ namespace DiplRad
         private int lastCrDC = 0;
 
         // Keep track of what byte/bit are we encoding/decoding. We are doing this to optimse memory usage.
-        private int currentBit = 0;
         private int currentByte = 0;
+        private int currentBit = 0;
 
         private Dictionary<string, int> inverseLuminanceDCHuffmanTable = new Dictionary<string, int>();
         private Dictionary<string, int> inverseChrominanceDCHuffmanTable = new Dictionary<string, int>();
         private Dictionary<string, Tuple<int, int>> inverseLuminanceACHuffmanTable = new Dictionary<string, Tuple<int, int>>();
         private Dictionary<string, Tuple<int, int>> inverseChrominanceACHuffmanTable = new Dictionary<string, Tuple<int, int>>();
 
-        internal List<Boolean> _messageInBits;
 
         #region Headers
 
@@ -160,7 +162,7 @@ namespace DiplRad
         //
         private void EncodeQuantizationTable(FileStream fileStream, bool isLuminance)
         {
-            List<int> serializedList;
+            int[] serializedList;
             StringBuilder encodedTable = new StringBuilder();
 
             fileStream.WriteByte(ControlFlag);
@@ -178,9 +180,9 @@ namespace DiplRad
                 serializedList = ZigZagSerialization(ChrominanceQuantizationTable);
             }
 
-            foreach (var value in serializedList)
+            for (int i = 0; i < serializedList.Length; i++)
             {
-                fileStream.WriteByte(Convert.ToByte(value));
+                fileStream.WriteByte(Convert.ToByte(serializedList[i]));
             }
         }
 
@@ -188,7 +190,6 @@ namespace DiplRad
         //
         private void EncodeStartOfTheFrame(FileStream fileStream, PictureYCbCr picture)
         {
-            StringBuilder encodedTable = new StringBuilder();
             fileStream.WriteByte(ControlFlag);
             fileStream.WriteByte(StartOfTheFrameMarker);
             fileStream.Write(StartOfTheFrameLength, 0, StartOfTheFrameLength.Length);
@@ -207,7 +208,6 @@ namespace DiplRad
         //
         private void EncodeHuffmanTable(FileStream fileStream, bool isLuminance, bool isDCComponent)
         {
-            StringBuilder encodedTable = new StringBuilder();
             fileStream.WriteByte(ControlFlag);
             fileStream.WriteByte(HuffmanMarker);
 
@@ -246,7 +246,7 @@ namespace DiplRad
 
         // Encode all necessary headers directly to the new jpeg file.
         //
-        private void EncodeHeaders (FileStream fileStream, PictureYCbCr picture)
+        private void EncodeHeaders(FileStream fileStream, PictureYCbCr picture)
         {
             // Add some information to the file.
             EncodeStartHeader(fileStream);
@@ -270,7 +270,13 @@ namespace DiplRad
 
         #endregion Headers
 
-        public JstegEncryptor(string outputPath) : base(outputPath)
+        public JstegEncryptor()
+        {
+            Initialize();
+        }
+
+        // Initiazes JStegEncryptor. It creates inverse tables.
+        private void Initialize()
         {
             // Populate inverse luminance DC huffman table
             for (int category = 0; category < LuminanceDCHuffmanTable.Length; category++)
@@ -311,21 +317,23 @@ namespace DiplRad
 
         // Get next bit for encoding.
         //
-        private int GetNextBit()
+        private int CreateMask()
         {
-            if (currentBit >= _messageInBits.Count)
+            int mask = 0x00;
+            for (int i = 0; i < lsbUsed; i++)
             {
-                return -1;
+                mask <<= 1;
+                mask = mask | encryptionMessage.GetNextBit();
             }
 
-            if (_messageInBits[currentBit++])
-            {
-                return 0x01;
-            }
-            else
-            {
-                return 0x00;
-            }
+            return mask;
+        }
+
+        // Get next bit for encoding.
+        //
+        private int CreateRemoverMask()
+        {
+            return (int)(0xFFFFFFFE << (lsbUsed - 1));
         }
 
         // Get next bit from buffer from decoding.
@@ -350,7 +358,7 @@ namespace DiplRad
                 }
             }
 
-            return ((buffer[currentByte] & (0x80 >> currentBit++)) != 0); 
+            return ((buffer[currentByte] & (0x80 >> currentBit++)) != 0);
         }
 
         // Gets value of DC component from previous block.
@@ -390,7 +398,7 @@ namespace DiplRad
         //
         internal string GetHuffmanDCTableValue(ComponentType type, int category)
         {
-            if(type == ComponentType.Y)
+            if (type == ComponentType.Y)
             {
                 return LuminanceDCHuffmanTable[category];
             }
@@ -420,7 +428,7 @@ namespace DiplRad
         {
             if (type == ComponentType.Y)
             {
-                 return LuminanceQuantizationTable[u, v];
+                return LuminanceQuantizationTable[u, v];
             }
             else
             {
@@ -430,58 +438,53 @@ namespace DiplRad
 
         // Takes a quantized Block and encodes it using standard huffman tables.
         //
-        internal StringBuilder EncodeBlock(int[,] quantizedBlock, ComponentType type)
+        internal String EncodeBlock(int[,] quantizedBlock, ComponentType type, bool encodeMessage)
         {
-            List<Tuple<int, int>> rleList = new List<Tuple<int, int>>();
             int zeroesBeforeCurrent = 0;
 
-            List<int> serializedList = ZigZagSerialization(quantizedBlock);
+            int[] serializedList = ZigZagSerialization(quantizedBlock);
 
             // Encode DC component.
-            StringBuilder completeString = EncodeDCComponent(type, serializedList[0]);
-            StringBuilder potentialAdded = new StringBuilder();
+            String completeString = EncodeDCComponent(type, serializedList[0]);
+            String potentialAdded = "";
             // Encode AC component.
-            for (int elemNum = 1; elemNum < serializedList.Count; elemNum++)
+            for (int elemNum = 1; elemNum < serializedList.Length; elemNum++)
             {
                 if (serializedList[elemNum] == 0)
                 {
                     zeroesBeforeCurrent++;
 
                     // If there are 16 zeroes in a row, we need to encode a special value.
-                    if(zeroesBeforeCurrent == 16)
+                    if (zeroesBeforeCurrent == 16)
                     {
-                        potentialAdded.Append(GetHuffmanACTableValue(type, 0, zeroesBeforeCurrent - 1));
+                        potentialAdded = potentialAdded + GetHuffmanACTableValue(type, 0, zeroesBeforeCurrent - 1);
                         zeroesBeforeCurrent = 0;
                     }
                 }
                 else
                 {
-                    completeString.Append(potentialAdded);
-                    potentialAdded.Clear();
+                    completeString = completeString + potentialAdded;
+                    potentialAdded = "";
 
                     int currentElem = serializedList[elemNum];
-                    if(currentElem != 1)
+                    if (encodeMessage)
                     {
-                        int mask = GetNextBit();
-                        if (mask == 0)
+                        if ((currentElem < 0 || currentElem > (Math.Pow(2, lsbUsed) - 1)) && !encryptionMessage.IsWholeMessageEncoded())
                         {
-                            currentElem &= -2;
-                        }
-                        else if (mask == 1)
-                        {
-                            currentElem |= 0x1;
+                            currentElem &= CreateRemoverMask();
+                            currentElem |= CreateMask();
                         }
                     }
 
-                    completeString.Append(GetHuffmanACTableValue(type, DetermineCategory(currentElem), zeroesBeforeCurrent));
-                    completeString.Append(DetermineMagnitude(currentElem));
+                    completeString += GetHuffmanACTableValue(type, DetermineCategory(currentElem), zeroesBeforeCurrent);
+                    completeString += DetermineMagnitude(currentElem);
                     zeroesBeforeCurrent = 0;
                 }
             }
 
-            if(zeroesBeforeCurrent > 0 || potentialAdded.Length > 0)
+            if (zeroesBeforeCurrent > 0 || potentialAdded.Length > 0)
             {
-                completeString.Append(GetHuffmanACTableValue(type, 0, 0));
+                completeString += GetHuffmanACTableValue(type, 0, 0);
             }
 
             return completeString;
@@ -489,24 +492,21 @@ namespace DiplRad
 
         // Encodes DC component.
         //
-        internal StringBuilder EncodeDCComponent(ComponentType type, int newDC)
+        internal String EncodeDCComponent(ComponentType type, int newDC)
         {
             int diff = newDC - GetPreviousDCValue(type);
-            
+
             // DC component encoding is optimised by using DIFF between DC component of the new block and the previous one.
             // We need to update previousDC component after every iteration.
             SetPreviousDCValue(type, newDC);
-
             int category = DetermineCategory(diff);
-
             if (category == 0)
             {
-                return new StringBuilder("00");
+                return "00";
             }
 
-            StringBuilder firstPart = new StringBuilder(GetHuffmanDCTableValue(type, category));
-
-            return firstPart.Append(DetermineMagnitude(diff));
+            String firstPart = GetHuffmanDCTableValue(type, category);
+            return firstPart + DetermineMagnitude(diff);
         }
 
         // Determines category in which value belongs.
@@ -534,7 +534,7 @@ namespace DiplRad
 
             if (val > 0)
             {
-                return magnitude.Append(Convert.ToString(val, 2));
+                magnitude.Append(Convert.ToString(val, 2));
             }
             else
             {
@@ -550,16 +550,17 @@ namespace DiplRad
                         magnitude[i] = '0';
                     }
                 }
-
-                return magnitude;
             }
+
+            return magnitude;
         }
 
         // Serializes block using zig-zag order.
         //
-        internal List<int> ZigZagSerialization(int[,] quantizedBlock, int matixSize = MatrixSize)
+        internal int[] ZigZagSerialization(int[,] quantizedBlock, int matixSize = MatrixSize)
         {
-            List<int> zigZagList = new List<int>();
+            int[] zigZagList = new int[matixSize * matixSize];
+            int currentElemNum = 0;
             bool ascDirection = false;
             int currentIteration = 0;
             int x = 0, y = 0;
@@ -568,7 +569,7 @@ namespace DiplRad
             {
                 while ((!ascDirection && x != 0) || (ascDirection && y != 0))
                 {
-                    zigZagList.Add(quantizedBlock[y, x]);
+                    zigZagList[currentElemNum++] = quantizedBlock[y, x];
                     if (ascDirection)
                     {
                         x++;
@@ -581,7 +582,7 @@ namespace DiplRad
                     }
                 }
 
-                zigZagList.Add(quantizedBlock[y, x]);
+                zigZagList[currentElemNum++] = quantizedBlock[y, x];
 
                 if (ascDirection && currentIteration < matixSize)
                 {
@@ -612,7 +613,7 @@ namespace DiplRad
             {
                 while ((ascDirection && x != matixSize - 1) || (!ascDirection && y != matixSize - 1))
                 {
-                    zigZagList.Add(quantizedBlock[y, x]);
+                    zigZagList[currentElemNum++] = quantizedBlock[y, x];
                     if (ascDirection)
                     {
                         x++;
@@ -625,7 +626,7 @@ namespace DiplRad
                     }
                 }
 
-                zigZagList.Add(quantizedBlock[y, x]);
+                zigZagList[currentElemNum++] = quantizedBlock[y, x];
 
                 if (ascDirection)
                 {
@@ -645,7 +646,7 @@ namespace DiplRad
 
         // Quantisiezes given block using standard quantization tables.
         //
-        public int[,] Quantization(double[,] block, ComponentType type)
+        internal int[,] Quantization(double[,] block, ComponentType type)
         {
             int[,] quantizedBlock = new int[8, 8];
             for (int u = 0; u < 7; u++)
@@ -657,6 +658,21 @@ namespace DiplRad
             }
 
             return quantizedBlock;
+        }
+
+        // Returns encoded block in a form of string.
+        internal string EncodeWholeColorBlock(ColorYCbCrBlock colorYCbCrBlock, bool encodeMessage)
+        {
+            string[] ret = new string[3];
+
+            Parallel.For((int)ComponentType.Y, (int)ComponentType.Cr + 1, ComponentType =>
+            {
+                double[,] dctBlock = colorYCbCrBlock.DCTTransformation((ComponentType)ComponentType);
+                int[,] quantizedBlock = Quantization(dctBlock, (ComponentType)ComponentType);
+                ret[ComponentType] += EncodeBlock(quantizedBlock, (ComponentType)ComponentType, encodeMessage);
+            });
+
+            return ret[0] + ret[1] + ret[2];
         }
 
         // Returns inverse lumiance/chromiance DC huffman table.
@@ -713,22 +729,14 @@ namespace DiplRad
 
         // Main function used to encrypt message.
         //
-        internal override void EncryptPicture(string picturePath, string messagePath)
+        internal string CompressPicture(string picturePath, bool encodeMessage)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             lastYDC = 0;
             lastCbDC = 0;
             lastCrDC = 0;
-            ulong messageSize;
-            _messageInBits = ConvertTxtToBitArray(messagePath, out messageSize);
-
-            // Add message length at begging of message.
-            _messageInBits.InsertRange(0, ConvertTxtLenghthToBitArray(messageSize));
-
             PictureYCbCr pictureYCbCr = new PictureYCbCr(new Bitmap(picturePath));
 
-            var outputFileName = outputPath + "JpegTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".jpg";
+            var outputFileName = outputPath + "\\JpegCompressionTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".jpg";
             using (FileStream fs = File.Create(outputFileName))
             {
                 EncodeHeaders(fs, pictureYCbCr);
@@ -736,15 +744,20 @@ namespace DiplRad
                 StringBuilder encodedPicture = new StringBuilder();
 
                 // Pass through all of the blocks and encode each of them.
+                double textPercent = pictureYCbCr.height / 100.0;
+                int percent = 1;
                 for (int blockY = 0; blockY < pictureYCbCr.height; blockY++)
                 {
                     for (int blockX = 0; blockX < pictureYCbCr.width; blockX++)
                     {
                         ColorYCbCrBlock currentBlock = pictureYCbCr.blocks[blockX, blockY];
+                        encodedPicture.Append(EncodeWholeColorBlock(currentBlock, encodeMessage: encodeMessage));
+                    }
 
-                        encodedPicture.Append(EncodeBlock(Quantization(currentBlock.DCTTransformation(ComponentType.Y), ComponentType.Y), ComponentType.Y));
-                        encodedPicture.Append(EncodeBlock(Quantization(currentBlock.DCTTransformation(ComponentType.Cb), ComponentType.Cb), ComponentType.Cb));
-                        encodedPicture.Append(EncodeBlock(Quantization(currentBlock.DCTTransformation(ComponentType.Cr), ComponentType.Cr), ComponentType.Cr));
+                    while (blockY + 1 >= textPercent)
+                    {
+                        textPercent += pictureYCbCr.height / 100.0;
+                        parentForm.SetCurrentProgress(percent++);
                     }
                 }
 
@@ -764,22 +777,32 @@ namespace DiplRad
                 // Encode end of the file.
                 fs.WriteByte(ControlFlag);
                 fs.WriteByte(EOI);
-
-                // Throw error if message is longer than capacity. We are doing this now,
-                // because we cannot determine picture capacity before jpeg compression, therefore we don't know if message is too long to encode before this point.
-                if (currentBit < _messageInBits.Count)
-                {
-                    throw new Exception(String.Format("Message is too long. Capacity is {0}, message length is {1}", currentBit / 8, _messageInBits.Count / 8));
-                }
-
-                Console.WriteLine(String.Format("New file created. File: {0}", outputFileName));
-                Console.WriteLine(sw.ElapsedMilliseconds + "miliseconds elapsed");
+                parentForm.SetCurrentProgress(100);
             }
+
+            return outputFileName;
+        }
+
+        // Main function used to encrypt message.
+        //
+        internal override string EncryptPicture(string picturePath, string messagePath)
+        {
+            SetEncryptionMessage(messagePath);
+            string outputFileName = CompressPicture(picturePath, encodeMessage: true);
+
+            // Throw error if message is longer than capacity. We are doing this now,
+            // because we cannot determine picture capacity before jpeg compression, therefore we don't know if message is too long to encode before this point.
+            if (!encryptionMessage.IsWholeMessageEncoded())
+            {
+                throw new Exception(String.Format("Message is too long. Capacity is {0}, message length is {1}", encryptionMessage.GetCurrentBit() / 8, encryptionMessage.GetMessageSize() / 8));
+            }
+
+            return outputFileName;
         }
 
         // Main function used to decrypt message. Note: We are assuming that all of the standard tables are being used, and same options as in encrypting algorithm.
         //
-        internal override void DecryptPicture(string picturePath)
+        public override string DecryptPicture(string picturePath, string outputPath)
         {
             List<Boolean> messageInBits = new List<Boolean>();
 
@@ -794,12 +817,15 @@ namespace DiplRad
                 bool messageSizeFound = false;
                 uint messageSize = 0;
 
+                double textPercent = 0;
+                int percent = 1;
                 while (!messageSizeFound || messageSize * 8 > messageInBits.Count)
                 {
-                    if (!messageSizeFound && messageInBits.Count > 16)
+                    if (!messageSizeFound && messageInBits.Count > 32)
                     {
                         messageSize = Helper.GetMessageSizeFromBoolArray(messageInBits);
                         messageSizeFound = true;
+                        textPercent = (messageSize * 8) / 100.0;
 
                         Console.WriteLine(String.Format("Found message legth: {0}", messageSize));
 
@@ -867,10 +893,164 @@ namespace DiplRad
                             }
                         }
                     }
+
+                    while (messageSizeFound && messageInBits.Count >= textPercent)
+                    {
+                        textPercent += (messageSize * 8) / 100.0;
+                        parentForm.SetCurrentProgress(percent++);
+                    }
                 }
 
-                Console.WriteLine(Helper.CreateStringFromBoolArray(messageInBits));
-                return;
+                parentForm.SetCurrentProgress(100);
+                var outputFileName = outputPath + "\\JpegDecryptionTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".txt";
+                File.WriteAllText(outputFileName, Helper.CreateStringFromBoolArray(messageInBits));
+                return outputFileName;
+            }
+        }
+
+        // Populates histogram as well as Stegoanalysis chart.
+        public override void PopulateChart(Chart chart, Chart PercentChart, string picturePath, out double max)
+        {
+            max = 0;
+            currentByte = 0;
+            currentBit = 0;
+
+            int[] histogram_cr = new int[256];
+            int[] histogram_cb = new int[256];
+            int[] histogram_y = new int[256];
+
+            using (FileStream fs = File.OpenRead(picturePath))
+            {
+                long startPosition = FindStartOfTheScanFrame(fs);
+
+                byte[] scanFrameBuffer = new byte[fs.Length - startPosition];
+                fs.Read(scanFrameBuffer, 0, (int)(fs.Length - startPosition));
+
+                string currentKey = "";
+
+                double percent = 1;
+                double textPercent = scanFrameBuffer.Length / 100.0;
+                bool foundEnd = false;
+                while (currentByte < scanFrameBuffer.Length && !foundEnd)
+                {
+                    for (int type = 0; type < 3; type++)
+                    {
+                        // Once number of zeroes reaches 64 we know that we processed all of the AC components.
+                        int zeroes = 0;
+                        if (scanFrameBuffer[currentByte] == 0xff && scanFrameBuffer[currentByte + 1] == 0xd9 ||
+                            scanFrameBuffer[currentByte + 1] == 0xff && scanFrameBuffer[currentByte + 2] == 0xd9)
+                        {
+                            foundEnd = true;
+                            break;
+                        }
+
+                        while (true)
+                        {
+                            // Add new char to the currentKey and check if that Key exists in Inverse tables.
+                            currentKey += GetNextBitFromEncryptedPicture(scanFrameBuffer) ? "1" : "0";
+
+                            if (GetInverseDCHuffmanTable(type == 0).ContainsKey(currentKey))
+                            {
+                                for (int i = 0; i < GetInverseDCHuffmanTable(type == 0)[currentKey]; i++)
+                                {
+                                    GetNextBitFromEncryptedPicture(scanFrameBuffer);
+                                }
+                                currentKey = "";
+                                break;
+                            }
+                        }
+
+                        while (zeroes < 63)
+                        {
+                            // Add new char to the currentKey and check if that Key exists in Inverse tables.
+                            currentKey += GetNextBitFromEncryptedPicture(scanFrameBuffer) ? "1" : "0";
+                            if (GetInverseACHuffmanTable(type == 0).ContainsKey(currentKey))
+                            {
+                                // Check if current key is end of block marker.
+                                if (GetHuffmanACTableValue(type == 0 ? ComponentType.Y : ComponentType.Cr, 0, 0) == currentKey)
+                                {
+                                    currentKey = "";
+                                    break;
+                                }
+
+                                // Check if current key is ZEROES marker.
+                                if (GetHuffmanACTableValue(type == 0 ? ComponentType.Y : ComponentType.Cr, 0, 15) == currentKey)
+                                {
+                                    zeroes += 16;
+                                }
+                                else
+                                {
+                                    // If current key is different then 1, then it contains 1 bit of encoded message.
+                                    zeroes += GetInverseACHuffmanTable(type == 0)[currentKey].Item2 + 1;
+                                    List<bool> tempList = new List<bool>();
+                                    int coef = 0;
+
+                                    for (int i = 0; i < GetInverseACHuffmanTable(type == 0)[currentKey].Item1; i++)
+                                    {
+                                        tempList.Add(GetNextBitFromEncryptedPicture(scanFrameBuffer));
+
+                                        if ((tempList[0] && tempList[i]) || (!tempList[0] && !tempList[i]))
+                                        {
+                                            coef = coef * 2 + 1;
+                                        }
+                                        else
+                                        {
+                                            coef *= 2;
+                                        }
+                                    }
+
+                                    // Add only if temp != 1 and we haven't filled messageInBits to the messageSize * 8.
+                                    if (!(tempList.Count == 1 && tempList[0]))
+                                    {
+                                        if (!tempList[0])
+                                        {
+                                            coef *= -1;
+                                        }
+
+                                        if (type == 0)
+                                        {
+                                            histogram_y[coef + 128]++;
+                                        }
+                                        else if (type == 1)
+                                        {
+                                            histogram_cb[coef + 128]++;
+                                        }
+                                        else if (type == 2)
+                                        {
+                                            histogram_cr[coef + 128]++;
+                                        }
+                                    }
+                                }
+
+                                currentKey = "";
+                            }
+                        }
+                    }
+
+                    if (currentByte >= textPercent)
+                    {
+                        double probability = CalculateProbabilityAtPoint(histogram_cr);
+                        PercentChart.Series["Cr"].Points.AddXY(percent, probability * 100);
+
+                        probability = CalculateProbabilityAtPoint(histogram_cb);
+                        PercentChart.Series["Cb"].Points.AddXY(percent, probability * 100);
+
+                        probability = CalculateProbabilityAtPoint(histogram_y);
+                        PercentChart.Series["Y"].Points.AddXY(percent, probability * 100);
+                        textPercent += scanFrameBuffer.Length / 100.0;
+                        percent += 1;
+                    }
+                }
+            }
+
+            for (int i = 0; i < histogram_cr.Length; i++)
+            {
+                chart.Series["Cr"].Points.AddXY(i - 128, histogram_cr[i]);
+                chart.Series["Cb"].Points.AddXY(i - 128, histogram_cb[i]);
+                chart.Series["Y"].Points.AddXY(i - 128, histogram_y[i]);
+                max = Math.Max(max, histogram_cr[i]);
+                max = Math.Max(max, histogram_cb[i]);
+                max = Math.Max(max, histogram_y[i]);
             }
         }
     }

@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/DiplRad/obj/Debug
+/DiplRad/bin/Debug
+/.vs/DiplRad/v15/Server/sqlite3
+/.vs/DiplRad/v15
+/DiplRad/obj
+/DiplRad/bin/x64/Debug
