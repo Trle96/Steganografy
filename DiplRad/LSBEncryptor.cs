@@ -5,13 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace DiplRad
 {
     class LSBEncryptor : Encryptor
     {
         #region Fields
-        internal ulong messageSize;
         internal Bitmap picture;
 
         internal int currentXCoord = 0;
@@ -24,13 +24,19 @@ namespace DiplRad
         #endregion Fields
         #region Methods
 
-        // Constructor
-        public LSBEncryptor(string outputPath) : base(outputPath)
+        public LSBEncryptor()
         {
         }
 
-        public LSBEncryptor()
+        internal void Reset()
         {
+            currentXCoord = 0;
+            currentYCoord = 0;
+        }
+
+        internal override string GetAlgorithmName()
+        {
+            return "BasicLSB";
         }
 
         //
@@ -71,17 +77,6 @@ namespace DiplRad
         }
 
         //
-        // Fetchs part of message lenght from current pixel.
-        //
-        internal List<Boolean> CalculateMessageLengthFromPixel(int currentColor)
-        {
-            List<Boolean> ret = new List<Boolean>();
-            ret.Add((currentColor & 0x02) != 0);
-            ret.Add((currentColor & 0x01) != 0);
-            return ret;
-        }
-
-        //
         // Gets pixel color value for given colorType.
         //
         internal byte GetPixelColor(Color pixel, ColorType colorType)
@@ -101,32 +96,31 @@ namespace DiplRad
         //
         // Main function used for encryption
         //
-        internal override string EncryptPicture(string picturePath, string messagePath)
+        internal override string EncryptPicture()
         {
-            currentXCoord = 0;
-            currentYCoord = 0;
-            int percent = 0;
-            encryptionMessage = new EncryptionMessage(messagePath, insertMessageSizeAtBeggining: false);
-            double textPercent = encryptionMessage.GetMessageSize() / 100.0;
-            //var messageInBits = ConvertTxtToEncryptedBitArray(messagePath, out messageSize);
-            /*List<bool> messageInBits;
-            using (StreamReader streamReader = new StreamReader(messagePath))
-            {
-                byte[] message = Zip(streamReader.ReadToEnd());
-                messageInBits = ConvertByteArrayToBitArray(message, out messageSize);
-            }*/
+            Reset();
 
-            picture = new Bitmap(picturePath);
+            picture = new Bitmap(ioPaths.ImagePath);
             uint imageCapacity = CalculateCapacity();
             uint pixelCount = (uint)(picture.Width * picture.Height);
+            bool loopedMessage = stegoMessage.IsLooped();
 
-            if (imageCapacity < encryptionMessage.GetMessageSize())
+            double cachedLimiter;
+            if (!loopedMessage)
+            {
+                cachedLimiter = stegoMessage.GetTotalBitCount() / 20.0;
+            }
+            else
+            {
+                cachedLimiter = pixelCount / 20.0;
+            }
+
+            if (imageCapacity < stegoMessage.GetTotalBitCount())
             {
                 throw new Exception("Image capacity is lower then message size");
             }
 
-            // int testMask = 1;
-            for (int pixelsProcessed = 0; pixelsProcessed < (pixelCount/2) /*&& currentBit < messageInBits.Count*/; pixelsProcessed++)
+            for (uint pixelsProcessed = 1; pixelsProcessed <= pixelCount && !stegoMessage.IsWholeMessageEncoded(); pixelsProcessed++)
             {
                 Color currentPixel = GetCurrentPixel();
 
@@ -137,12 +131,10 @@ namespace DiplRad
                     currentColor = (byte)(currentColor & mask);
 
                     var colorModification = 0;
-                    for (int i = 0; i < lsbUsed/* && currentBit < messageInBits.Count*/; i++)
+                    for (int i = 0; i < lsbUsed && !stegoMessage.IsWholeMessageEncoded(); i++)
                     {
                         colorModification <<= 1;
-                        colorModification += encryptionMessage.GetNextBit();
-                        // colorModification += testMask;
-                        // testMask = testMask == 1 ? 0 : 1;
+                        colorModification += stegoMessage.GetNextStegoMessageBit();
                     }
 
                     switch (colorType)
@@ -161,18 +153,22 @@ namespace DiplRad
 
                 SetCurrentPixel();
                 IterateToNextPixel();
-                /*if (currentBit >= textPercent)
+                if (!loopedMessage && stegoMessage.GetCurrentBit() > cachedLimiter)
                 {
-                    percent++;
-                    textPercent += messageInBits.Count / 100.0;
-                    parentForm.SetCurrentProgress(percent);
-                }*/
+                    cachedLimiter += stegoMessage.GetTotalBitCount() / 20.0;
+                    parentForm.SetCurrentProgress((int)Math.Round(stegoMessage.GetCurrentBit() / (stegoMessage.GetTotalBitCount() / 100.0)));
+                }
+                else if (loopedMessage && pixelsProcessed > cachedLimiter)
+                {
+
+                    cachedLimiter += pixelCount / 20.0;
+                    parentForm.SetCurrentProgress((int)Math.Round(pixelsProcessed / (pixelCount / 100.0)));
+                }
             }
 
             parentForm.SetCurrentProgress(100);
-            var outputFileName = outputPath + "\\LSBTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".png";
+            var outputFileName = GenerateEncryptionOutputFileName();
             picture.Save(outputFileName);
-            Console.WriteLine(String.Format("New file created. File: {0}", outputFileName));
 
             return outputFileName;
         }
@@ -180,25 +176,34 @@ namespace DiplRad
         //
         // Main function used for decryption.
         //
-        public override string DecryptPicture(string picturePath, string outputPath)
+        internal override string DecryptPicture(StegoOptions stegoOptions)
         {
-            currentXCoord = 0;
-            currentYCoord = 0;
-            int percent = 0;
+            Reset();
+            lsbUsed = stegoOptions.LsbUsed;
+            bool messageSizeFound = false;
+            uint messageSize = 0;
             List<Boolean> messageInBits = new List<Boolean>();
-            picture = new Bitmap(picturePath);
+            picture = new Bitmap(ioPaths.ImagePath);
             uint pixelCount = (uint)(picture.Width * picture.Height);
-            double textPercent = pixelCount / 100.0;
+            double cachedLimiter = 0;
 
-            for (int pixelsProcessed = 0; pixelsProcessed < pixelCount; pixelsProcessed++)
+            for (int pixelsProcessed = 0; pixelsProcessed < pixelCount && (!messageSizeFound || messageSize > messageInBits.Count / 8); pixelsProcessed++)
             {
                 Color currentPixel = GetCurrentPixel();
+
+                if (!messageSizeFound && messageInBits.Count >= 32)
+                {
+                    messageSize = Helper.GetMessageSizeFromBoolArray(messageInBits);
+                    messageInBits.RemoveRange(0, 32);
+                    messageSizeFound = true;
+                    cachedLimiter = messageSize * 8 / 20.0;
+                }
 
                 foreach (ColorType colorType in Enum.GetValues(typeof(ColorType)))
                 {
                     int currentColor = GetPixelColor(currentPixel, colorType);
                     var mask = 0x01 << (lsbUsed - 1);
-                    for (int i = 0; i < lsbUsed; i++)
+                    for (int i = 0; i < lsbUsed && (!messageSizeFound || messageSize > messageInBits.Count / 8); i++)
                     {
                         messageInBits.Add((currentColor & mask) != 0);
                         mask >>= 1;
@@ -206,18 +211,65 @@ namespace DiplRad
                 }
 
                 IterateToNextPixel();
+                if (messageSizeFound && messageInBits.Count >= cachedLimiter)
+                {
+                    cachedLimiter += messageSize * 8 / 20.0;
+                    parentForm.SetCurrentProgress((int)Math.Round(messageInBits.Count / (messageSize * 8 / 100.0)));
+                }
+            }
+
+            parentForm.SetCurrentProgress(100);
+            return GenerateDecryptionOutput(messageInBits, stegoOptions);
+        }
+
+        public override void PopulateChart(Chart chart, Chart PercentChart, string bmPath, out double max)
+        {
+            Reset();
+            max = 0;
+            picture = new Bitmap(bmPath);
+            int[] histogram_r = new int[256];
+            int[] histogram_b = new int[256];
+            int[] histogram_g = new int[256];
+
+            int percent = 0;
+            uint pixelCount = (uint)(picture.Width * picture.Height);
+            double textPercent = pixelCount / 100.0;
+            for (int pixelsProcessed = 0; pixelsProcessed < pixelCount; pixelsProcessed++)
+            {
+                Color currentPixel = GetCurrentPixel();
+
+                histogram_r[currentPixel.R]++;
+                histogram_b[currentPixel.B]++;
+                histogram_g[currentPixel.G]++;
+
+                IterateToNextPixel();
+
                 if (pixelsProcessed >= textPercent)
                 {
+                    double probability = CalculateProbabilityAtPoint(histogram_r);
+                    PercentChart.Series["RedProbability"].Points.AddXY(percent, probability * 100);
+
+                    probability = CalculateProbabilityAtPoint(histogram_b);
+                    PercentChart.Series["BlueProbability"].Points.AddXY(percent, probability * 100);
+
+                    probability = CalculateProbabilityAtPoint(histogram_g);
+                    PercentChart.Series["GreenProbability"].Points.AddXY(percent, probability * 100);
+
                     percent++;
                     textPercent += pixelCount / 100.0;
                     parentForm.SetCurrentProgress(percent);
                 }
             }
 
-            parentForm.SetCurrentProgress(100);
-            var outputFileName = outputPath + "\\LSBDecryptionTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".txt";
-            File.WriteAllText(outputFileName, Helper.CreateStringFromBoolArray(messageInBits));
-            return outputFileName;
+            for (int i = 0; i < histogram_r.Length; i++)
+            {
+                chart.Series["RED"].Points.AddXY(i, histogram_r[i]);
+                chart.Series["BLUE"].Points.AddXY(i, histogram_b[i]);
+                chart.Series["GREEN"].Points.AddXY(i, histogram_g[i]);
+                max = Math.Max(max, histogram_r[i]);
+                max = Math.Max(max, histogram_b[i]);
+                max = Math.Max(max, histogram_g[i]);
+            }
         }
         #endregion Methods
     }

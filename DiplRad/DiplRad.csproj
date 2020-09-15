@@ -75,7 +75,10 @@
     <PackageReference Include="MathNet.Numerics" Version="4.11.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EncryptionMessage.cs" />
+    <Compile Include="IOPaths.cs" />
+    <Compile Include="JpegEncodingFlags.cs" />
+    <Compile Include="JpegStandardTables.cs" />
+    <Compile Include="StegoMessage.cs" />
     <Compile Include="OutputTextForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,6 +130,7 @@
     <Compile Include="PITEncryptor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StegoOptions.cs" />
     <Compile Include="YCbCrPixel.cs" />
     <Compile Include="HistogramComparison.cs">
       <SubType>Form</SubType>

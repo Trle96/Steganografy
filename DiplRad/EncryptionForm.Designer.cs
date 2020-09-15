@@ -29,27 +29,32 @@
         private void InitializeComponent()
         {
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.browseTxtFilesButton = new System.Windows.Forms.Button();
+            this.BrowseTxtFilesTextBox = new System.Windows.Forms.TextBox();
+            this.BrowseImagesTextBox = new System.Windows.Forms.TextBox();
+            this.browseImagesButton = new System.Windows.Forms.Button();
+            this.browseFoldersButton = new System.Windows.Forms.Button();
+            this.BrowseFoldersTextBox = new System.Windows.Forms.TextBox();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.SelectTxtFileLabel = new System.Windows.Forms.Label();
+            this.BrowseImagesLabel = new System.Windows.Forms.Label();
+            this.BrowseFoldersLabel = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.button7 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.showImageComparisonButton = new System.Windows.Forms.Button();
+            this.showHistogramComparisonButton = new System.Windows.Forms.Button();
+            this.createStegoImageButton = new System.Windows.Forms.Button();
+            this.lsbCountUsed = new System.Windows.Forms.NumericUpDown();
+            this.lsbCountUsedLabel = new System.Windows.Forms.Label();
+            this.titleLabel = new System.Windows.Forms.Label();
+            this.encryptImageLabel = new System.Windows.Forms.Label();
+            this.encryptImageCheckBox = new System.Windows.Forms.CheckBox();
+            this.operationResultLabel = new System.Windows.Forms.Label();
+            this.advancedOptions = new System.Windows.Forms.GroupBox();
+            this.loopMessageRadioButton = new System.Windows.Forms.RadioButton();
+            this.compressMessageRadioButton = new System.Windows.Forms.RadioButton();
+            this.noneRadioButton = new System.Windows.Forms.RadioButton();
+            ((System.ComponentModel.ISupportInitialize)(this.lsbCountUsed)).BeginInit();
             this.SuspendLayout();
             // 
             // openFileDialog1
@@ -59,60 +64,6 @@
             this.openFileDialog1.Title = "Select input txt";
             this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(429, 65);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 20);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Browse files";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(12, 65);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(411, 20);
-            this.textBox1.TabIndex = 2;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(12, 121);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(411, 20);
-            this.textBox2.TabIndex = 3;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(429, 120);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 21);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "Browse files";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(429, 179);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 20);
-            this.button3.TabIndex = 6;
-            this.button3.Text = "Browse files";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(12, 179);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ReadOnly = true;
-            this.textBox3.Size = new System.Drawing.Size(411, 20);
-            this.textBox3.TabIndex = 5;
-            // 
             // openFileDialog2
             // 
             this.openFileDialog2.FileName = "openFileDialog2";
@@ -120,191 +71,298 @@
             this.openFileDialog2.Title = "Select cover image";
             this.openFileDialog2.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog2_FileOk);
             // 
-            // label2
+            // TitleLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Arial", 10F);
-            this.label2.Location = new System.Drawing.Point(9, 46);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(276, 16);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Select txt file that contains stego message:";
+            this.titleLabel.AutoSize = true;
+            this.titleLabel.Font = new System.Drawing.Font("Calibri", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.titleLabel.Location = new System.Drawing.Point(10, 10);
+            this.titleLabel.Name = "titleLabel";
+            this.titleLabel.Size = new System.Drawing.Size(200, 30);
+            this.titleLabel.TabIndex = 18;
+            this.titleLabel.Text = "titleLabel";
             // 
-            // label3
+            // SelectTxtFileLabel
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Arial", 10F);
-            this.label3.Location = new System.Drawing.Point(9, 102);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(265, 16);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Select a cover picture for steganography";
+            this.SelectTxtFileLabel.AutoSize = true;
+            this.SelectTxtFileLabel.Font = new System.Drawing.Font("Calibri", 10F);
+            this.SelectTxtFileLabel.Location = new System.Drawing.Point(10, 50);
+            this.SelectTxtFileLabel.Name = "SelectTxtFileLabel";
+            this.SelectTxtFileLabel.Size = new System.Drawing.Size(200, 15);
+            this.SelectTxtFileLabel.TabIndex = 7;
+            this.SelectTxtFileLabel.Text = "Select txt file that contains stego message:";
             // 
-            // label4
+            // BrowseTxtFilesTextBox
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Arial", 10F);
-            this.label4.Location = new System.Drawing.Point(9, 160);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(143, 16);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "Select an output path";
+            this.BrowseTxtFilesTextBox.Location = new System.Drawing.Point(10, 70);
+            this.BrowseTxtFilesTextBox.Name = "BrowseTxtFilesTextBox";
+            this.BrowseTxtFilesTextBox.ReadOnly = true;
+            this.BrowseTxtFilesTextBox.Size = new System.Drawing.Size(300, 20);
+            this.BrowseTxtFilesTextBox.TabIndex = 2;
+            // 
+            // BrowseTxtFilesButton
+            // 
+            this.browseTxtFilesButton.Location = new System.Drawing.Point(315, 70);
+            this.browseTxtFilesButton.Name = "browseTxtFilesButton";
+            this.browseTxtFilesButton.Size = new System.Drawing.Size(75, 20);
+            this.browseTxtFilesButton.TabIndex = 1;
+            this.browseTxtFilesButton.Text = "Browse files";
+            this.browseTxtFilesButton.UseVisualStyleBackColor = true;
+            this.browseTxtFilesButton.Click += new System.EventHandler(this.BrowseTxtFilesButton_Click);
+            // 
+            // BrowseImagesLabel
+            // 
+            this.BrowseImagesLabel.AutoSize = true;
+            this.BrowseImagesLabel.Font = new System.Drawing.Font("Calibri", 10F);
+            this.BrowseImagesLabel.Location = new System.Drawing.Point(10, 100);
+            this.BrowseImagesLabel.Name = "BrowseImagesLabel";
+            this.BrowseImagesLabel.Size = new System.Drawing.Size(200, 15);
+            this.BrowseImagesLabel.TabIndex = 8;
+            this.BrowseImagesLabel.Text = "Select a cover picture for steganography:";
+            // 
+            // BrowseImagesButton
+            // 
+            this.browseImagesButton.Location = new System.Drawing.Point(315, 120);
+            this.browseImagesButton.Name = "BrowseImagesButton";
+            this.browseImagesButton.Size = new System.Drawing.Size(75, 20);
+            this.browseImagesButton.TabIndex = 4;
+            this.browseImagesButton.Text = "Browse files";
+            this.browseImagesButton.UseVisualStyleBackColor = true;
+            this.browseImagesButton.Click += new System.EventHandler(this.BrowseImagesButton_Click);
+            // 
+            // BrowseImagesTextBox
+            // 
+            this.BrowseImagesTextBox.Location = new System.Drawing.Point(10, 120);
+            this.BrowseImagesTextBox.Name = "BrowseImagesTextBox";
+            this.BrowseImagesTextBox.ReadOnly = true;
+            this.BrowseImagesTextBox.Size = new System.Drawing.Size(300, 20);
+            this.BrowseImagesTextBox.TabIndex = 3;
+            // 
+            // BrowseFoldersLabel
+            // 
+            this.BrowseFoldersLabel.AutoSize = true;
+            this.BrowseFoldersLabel.Font = new System.Drawing.Font("Calibri", 10F);
+            this.BrowseFoldersLabel.Location = new System.Drawing.Point(10, 150);
+            this.BrowseFoldersLabel.Name = "BrowseFoldersLabel";
+            this.BrowseFoldersLabel.Size = new System.Drawing.Size(200, 15);
+            this.BrowseFoldersLabel.TabIndex = 9;
+            this.BrowseFoldersLabel.Text = "Select an output path:";
+            // 
+            // BrowseFoldersButton
+            // 
+            this.browseFoldersButton.Location = new System.Drawing.Point(315, 170);
+            this.browseFoldersButton.Name = "BrowseFoldersButton";
+            this.browseFoldersButton.Size = new System.Drawing.Size(75, 20);
+            this.browseFoldersButton.TabIndex = 6;
+            this.browseFoldersButton.Text = "Browse files";
+            this.browseFoldersButton.UseVisualStyleBackColor = true;
+            this.browseFoldersButton.Click += new System.EventHandler(this.BrowseFoldersButton_Click);
+            // 
+            // BrowseFoldersTextBox
+            // 
+            this.BrowseFoldersTextBox.Location = new System.Drawing.Point(10, 170);
+            this.BrowseFoldersTextBox.Name = "BrowseFoldersTextBox";
+            this.BrowseFoldersTextBox.ReadOnly = true;
+            this.BrowseFoldersTextBox.Size = new System.Drawing.Size(300, 20);
+            this.BrowseFoldersTextBox.TabIndex = 5;
+            // 
+            // AdvancedOptions
+            // 
+            this.advancedOptions.Controls.Add(this.lsbCountUsedLabel);
+            this.advancedOptions.Controls.Add(this.lsbCountUsed);
+            this.advancedOptions.Controls.Add(this.encryptImageLabel);
+            this.advancedOptions.Controls.Add(this.encryptImageCheckBox);
+            this.advancedOptions.Controls.Add(this.loopMessageRadioButton);
+            this.advancedOptions.Controls.Add(this.compressMessageRadioButton);
+            this.advancedOptions.Controls.Add(this.noneRadioButton);
+            this.advancedOptions.Location = new System.Drawing.Point(10, 200);
+            this.advancedOptions.Name = "AdvancedOptions";
+            this.advancedOptions.Size = new System.Drawing.Size(375, 160);
+            this.advancedOptions.TabIndex = 2;
+            this.advancedOptions.TabStop = false;
+            this.advancedOptions.Text = "Advanced Options";
+            // 
+            // lsbCountUsed
+            // 
+            this.lsbCountUsed.Location = new System.Drawing.Point(10, 25);
+            this.lsbCountUsed.Font = new System.Drawing.Font("Arial", 8F);
+            this.lsbCountUsed.Maximum = 7;
+            this.lsbCountUsed.Minimum = 1;
+            this.lsbCountUsed.Name = "lsbCountUsed";
+            this.lsbCountUsed.ReadOnly = true;
+            this.lsbCountUsed.Size = new System.Drawing.Size(50, 5);
+            this.lsbCountUsed.TabIndex = 16;
+            this.lsbCountUsed.Value = 1;
+            // 
+            // lsbCountUsedLabel
+            // 
+            this.lsbCountUsedLabel.AutoSize = true;
+            this.lsbCountUsedLabel.Font = new System.Drawing.Font("Arial", 8F);
+            this.lsbCountUsedLabel.Location = new System.Drawing.Point(60, 27);
+            this.lsbCountUsedLabel.Name = "lsbCountUsedLabel";
+            this.lsbCountUsedLabel.Size = new System.Drawing.Size(400, 10);
+            this.lsbCountUsedLabel.TabIndex = 17;
+            this.lsbCountUsedLabel.Text = "Number of least significant bits that will be used";
+            // 
+            // NoneRadioButton
+            // 
+            this.noneRadioButton.AutoSize = true;
+            this.noneRadioButton.Location = new System.Drawing.Point(10, 60);
+            this.noneRadioButton.Font = new System.Drawing.Font("Arial", 8F);
+            this.noneRadioButton.Name = "NoneRadioButton";
+            this.noneRadioButton.TabIndex = 0;
+            this.noneRadioButton.TabStop = true;
+            this.noneRadioButton.Text = "None";
+            this.noneRadioButton.UseVisualStyleBackColor = true;
+            this.noneRadioButton.Checked = true;
+            // 
+            // LoopMessageRadioButton
+            // 
+            this.loopMessageRadioButton.AutoSize = true;
+            this.loopMessageRadioButton.Location = new System.Drawing.Point(10, 80);
+            this.loopMessageRadioButton.Font = new System.Drawing.Font("Arial", 8F);
+            this.loopMessageRadioButton.Name = "LoopMessageRadioButton";
+            this.loopMessageRadioButton.TabIndex = 0;
+            this.loopMessageRadioButton.TabStop = true;
+            this.loopMessageRadioButton.Text = "Loop message across whole image";
+            this.loopMessageRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // CompressMessageRadioButton
+            // 
+            this.compressMessageRadioButton.AutoSize = true;
+            this.compressMessageRadioButton.Location = new System.Drawing.Point(10, 100);
+            this.compressMessageRadioButton.Font = new System.Drawing.Font("Arial", 8F);
+            this.compressMessageRadioButton.Name = "CompressMessageRadioButton";
+            this.compressMessageRadioButton.TabIndex = 1;
+            this.compressMessageRadioButton.TabStop = true;
+            this.compressMessageRadioButton.Text = "Compress message before embedding";
+            this.compressMessageRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // EncryptImageLabelCheckBox
+            // 
+            this.encryptImageCheckBox.Location = new System.Drawing.Point(10, 134);
+            this.encryptImageCheckBox.Name = "EncryptImageLabelCheckBox";
+            this.encryptImageCheckBox.Size = new System.Drawing.Size(75, 20);
+            this.encryptImageCheckBox.TabIndex = 16;
+            this.encryptImageCheckBox.Checked = false;
+            // 
+            // EncryptImageLabel
+            // 
+            this.encryptImageLabel.AutoSize = true;
+            this.encryptImageLabel.Font = new System.Drawing.Font("Arial", 8F);
+            this.encryptImageLabel.Location = new System.Drawing.Point(25, 136);
+            this.encryptImageLabel.Name = "EncryptImageLabel";
+            this.encryptImageLabel.Size = new System.Drawing.Size(400, 20);
+            this.encryptImageLabel.TabIndex = 17;
+            this.encryptImageLabel.Text = "Check if you want to encrypt message before embedding";
+            // 
+            // showImageComparisonButton
+            // 
+            this.showImageComparisonButton.Enabled = false;
+            this.showImageComparisonButton.Location = new System.Drawing.Point(40, 380);
+            this.showImageComparisonButton.Name = "showImageComparisonButton";
+            this.showImageComparisonButton.Size = new System.Drawing.Size(100, 50);
+            this.showImageComparisonButton.TabIndex = 12;
+            this.showImageComparisonButton.Text = "Show image comparison";
+            this.showImageComparisonButton.UseVisualStyleBackColor = true;
+            this.showImageComparisonButton.Click += new System.EventHandler(this.ShowImageComparisonButton_Click);
+            // 
+            // showHistogramComparisonButton
+            // 
+            this.showHistogramComparisonButton.Enabled = false;
+            this.showHistogramComparisonButton.Location = new System.Drawing.Point(150, 380);
+            this.showHistogramComparisonButton.Name = "showHistogramComparisonButton";
+            this.showHistogramComparisonButton.Size = new System.Drawing.Size(100, 50);
+            this.showHistogramComparisonButton.TabIndex = 13;
+            this.showHistogramComparisonButton.Text = "Show histogram comparison";
+            this.showHistogramComparisonButton.UseVisualStyleBackColor = true;
+            this.showHistogramComparisonButton.Click += new System.EventHandler(this.ShowHistogramComparisonButton_Click);
+            // 
+            // createStegoImageButton
+            // 
+            this.createStegoImageButton.Location = new System.Drawing.Point(260, 380);
+            this.createStegoImageButton.Name = "createStegoImageButton";
+            this.createStegoImageButton.Size = new System.Drawing.Size(100, 50);
+            this.createStegoImageButton.TabIndex = 14;
+            this.createStegoImageButton.Text = "Create a Stego Image";
+            this.createStegoImageButton.UseVisualStyleBackColor = true;
+            this.createStegoImageButton.Click += new System.EventHandler(this.CreateStegoImageButton_Click);
             // 
             // progressBar1
             // 
-            this.progressBar.Location = new System.Drawing.Point(9, 363);
+            this.progressBar.Location = new System.Drawing.Point(10, 450);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(495, 23);
+            this.progressBar.Size = new System.Drawing.Size(375, 20);
             this.progressBar.TabIndex = 10;
             // 
-            // button4
+            // operationResultLabel
             // 
-            this.button4.Location = new System.Drawing.Point(9, 307);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(98, 50);
-            this.button4.TabIndex = 11;
-            this.button4.Text = "Go back to previous menu";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.GoBackToPreviousMenu);
-            // 
-            // button5
-            // 
-            this.button5.Enabled = false;
-            this.button5.Location = new System.Drawing.Point(302, 307);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(98, 50);
-            this.button5.TabIndex = 12;
-            this.button5.Text = "Show image comparison";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
-            // button6
-            // 
-            this.button6.Enabled = false;
-            this.button6.Location = new System.Drawing.Point(406, 307);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(98, 50);
-            this.button6.TabIndex = 13;
-            this.button6.Text = "Show histogram comparison";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(406, 250);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(98, 51);
-            this.button7.TabIndex = 14;
-            this.button7.Text = "Create a Stego Image";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.Green;
-            this.label1.Location = new System.Drawing.Point(12, 389);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(0, 13);
-            this.label1.TabIndex = 15;
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(429, 220);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            7,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.ReadOnly = true;
-            this.numericUpDown1.Size = new System.Drawing.Size(72, 20);
-            this.numericUpDown1.TabIndex = 16;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Arial", 10F);
-            this.label5.Location = new System.Drawing.Point(9, 220);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(355, 16);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Select number of least significant bits that will be used: ";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(8, 9);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(64, 22);
-            this.label6.TabIndex = 18;
-            this.label6.Text = "label6";
+            this.operationResultLabel.AutoSize = false;
+            this.operationResultLabel.ForeColor = System.Drawing.Color.Green;
+            this.operationResultLabel.Location = new System.Drawing.Point(10, 480);
+            this.operationResultLabel.Name = "operationResultLabel";
+            this.operationResultLabel.Size = new System.Drawing.Size(375, 60);
+            this.operationResultLabel.TabIndex = 15;
+            this.operationResultLabel.Font = new System.Drawing.Font("Calibri", 7F);
             // 
             // EncryptionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(516, 420);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.numericUpDown1);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button7);
-            this.Controls.Add(this.button6);
-            this.Controls.Add(this.button5);
-            this.Controls.Add(this.button4);
+            this.ClientSize = new System.Drawing.Size(395, 540); 
+            this.Controls.Add(this.titleLabel);
+            this.Controls.Add(this.operationResultLabel);
+            this.Controls.Add(this.createStegoImageButton);
+            this.Controls.Add(this.showHistogramComparisonButton);
+            this.Controls.Add(this.showImageComparisonButton);
             this.Controls.Add(this.progressBar);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.BrowseFoldersLabel);
+            this.Controls.Add(this.BrowseImagesLabel);
+            this.Controls.Add(this.SelectTxtFileLabel);
+            this.Controls.Add(this.browseFoldersButton);
+            this.Controls.Add(this.BrowseFoldersTextBox);
+            this.Controls.Add(this.browseImagesButton);
+            this.Controls.Add(this.BrowseImagesTextBox);
+            this.Controls.Add(this.BrowseTxtFilesTextBox);
+            this.Controls.Add(this.browseTxtFilesButton);
+            this.Controls.Add(this.advancedOptions);
+            this.advancedOptions.ResumeLayout(false);
             this.Cursor = System.Windows.Forms.Cursors.SizeAll;
             this.Name = "EncryptionForm";
-            this.Text = "EncryptionForm";
+            this.Text = "Encryption Form";
             this.Load += new System.EventHandler(this.EncryptionForm_Load);
             this.Disposed += new System.EventHandler(this.GoBackToPreviousMenu);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lsbCountUsed)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
         }
 
         #endregion
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Button browseTxtFilesButton;
+        private System.Windows.Forms.TextBox BrowseTxtFilesTextBox;
+        private System.Windows.Forms.TextBox BrowseImagesTextBox;
+        private System.Windows.Forms.Button browseImagesButton;
+        private System.Windows.Forms.Button browseFoldersButton;
+        private System.Windows.Forms.TextBox BrowseFoldersTextBox;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label SelectTxtFileLabel;
+        private System.Windows.Forms.Label BrowseImagesLabel;
+        private System.Windows.Forms.Label BrowseFoldersLabel;
+        private System.Windows.Forms.Button showImageComparisonButton;
+        private System.Windows.Forms.Button showHistogramComparisonButton;
+        private System.Windows.Forms.Button createStegoImageButton;
+        private System.Windows.Forms.Label operationResultLabel;
+        private System.Windows.Forms.NumericUpDown lsbCountUsed;
+        private System.Windows.Forms.Label lsbCountUsedLabel;
+        private System.Windows.Forms.Label titleLabel;
+        private System.Windows.Forms.Label encryptImageLabel;
+        private System.Windows.Forms.CheckBox encryptImageCheckBox;
+        private System.Windows.Forms.GroupBox advancedOptions;
+        private System.Windows.Forms.RadioButton loopMessageRadioButton;
+        private System.Windows.Forms.RadioButton compressMessageRadioButton;
+        private System.Windows.Forms.RadioButton noneRadioButton;
     }
 }

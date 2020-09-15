@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
-using System.IO;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace DiplRad
 {
@@ -26,22 +25,25 @@ namespace DiplRad
         #region Methods
 
         // Constructor
-        public PITEncryptor(string outputPath) : base(outputPath)
-        {
-            lsbUsed = 2;
-        }
-
-        // Constructor
-        public PITEncryptor()
+        public PITEncryptor() : base()
         {
         }
 
-        //
-        // LSB count cannot be changed for PIT.
-        //
-        internal override void SetLSBCount(int value)
+        internal void Reset()
         {
-            return;
+            currentXCoord = 1;
+            currentYCoord = 0;
+        }
+
+        internal override void SetStegoMessage(string messagePath, StegoOptions stegoOptions)
+        {
+            stegoOptions.InsertMessageSizeAtBeginning = false;
+            stegoMessage = new StegoMessage(messagePath, stegoOptions);
+        }
+
+        internal override string GetAlgorithmName()
+        {
+            return "PIT";
         }
 
         //
@@ -84,18 +86,18 @@ namespace DiplRad
         //
         internal int CalculateNewHeaderPixel(int currentColor)
         {
-            currentColor = currentColor | 0x03;
+            currentColor |= 0x03;
             if ((mask & messageSize) == 0)
             {
-                currentColor = currentColor ^ 0x02;
+                currentColor ^= 0x02;
             }
 
-            mask = mask >> 1;
+            mask >>= 1;
             if ((mask & messageSize) == 0)
             {
-                currentColor = currentColor ^ 0x01;
+                currentColor ^= 0x01;
             }
-            mask = mask >> 1;
+            mask >>= 1;
 
             return currentColor;
         }
@@ -143,7 +145,7 @@ namespace DiplRad
             }
             else
             {
-                IndicatorChannel = ColorType.RED;
+                IndicatorChannel = ColorType.GREEN;
             }
 
             if (Helper.IsParityBitOne(messageSize))
@@ -184,16 +186,28 @@ namespace DiplRad
             }
         }
 
+        private int ModifyChannel(int channelValue)
+        {
+            channelValue &= 0xFC;
+
+            var channelModification = stegoMessage.GetNextStegoMessageBit() << 1;
+            if (!stegoMessage.IsWholeMessageEncoded())
+            {
+                channelModification += stegoMessage.GetNextStegoMessageBit();
+            }
+
+            return channelValue | channelModification;
+        }
+
         //
         // Main function used for encryption
         //
-        internal override string EncryptPicture(string picturePath, string messagePath)
+        internal override string EncryptPicture()
         {
-            encryptionMessage = new EncryptionMessage(messagePath, insertMessageSizeAtBeggining: false);
-
-            picture = new Bitmap(picturePath);
-            double textPercent = encryptionMessage.GetMessageSize() / 100.0;
-
+            Reset();
+            picture = new Bitmap(ioPaths.ImagePath);
+            double cachedLimiter = stegoMessage.GetTotalBitCount() / 20.0;
+            messageSize = (ulong)stegoMessage.GetTotalBitCount();
             // Use first 8 pixels in the first row to write message size.
             // We are using 2 LSBs per pixel color, that means that we are storing 48bits.
             for (int i = 0; i < 8; i++)
@@ -208,10 +222,7 @@ namespace DiplRad
 
             // Determine which channel will be indicator.
             DelegateColorTypesToChannels();
-
-            int percent = 0;
-            var currentBit = 0;
-            while (currentBit < encryptionMessage.GetMessageSize())
+            while (!stegoMessage.IsWholeMessageEncoded())
             {
                 Color currentPixel = GetNextPixel();
 
@@ -223,43 +234,25 @@ namespace DiplRad
 
                 if (populateFirstChannel)
                 {
-                    firstChannelColor = firstChannelColor & 0xFC;
-
-                    var firstChannelModification = encryptionMessage.GetNextBit() << 1;
-                    if (currentBit < encryptionMessage.GetMessageSize())
-                    {
-                        firstChannelModification += encryptionMessage.GetNextBit();
-                    }
-
-                    firstChannelColor = firstChannelColor | firstChannelModification;
+                    firstChannelColor = ModifyChannel(firstChannelColor);
                 }
 
-                if (populateSecondChannel && currentBit < encryptionMessage.GetMessageSize())
+                if (populateSecondChannel && !stegoMessage.IsWholeMessageEncoded())
                 {
-                    secondChannelColor = secondChannelColor & 0xFC;
-
-                    var secondChannelModification = encryptionMessage.GetNextBit() << 1;
-                    if (currentBit < encryptionMessage.GetMessageSize())
-                    {
-                        secondChannelModification += encryptionMessage.GetNextBit();
-                    }
-
-                    secondChannelColor = secondChannelColor | secondChannelModification;
+                    secondChannelColor = ModifyChannel(secondChannelColor);
                 }
 
                 SetCurrentPixel(firstChannelColor, secondChannelColor);
-                if (currentBit >= textPercent)
+                if (stegoMessage.GetCurrentBit() >= cachedLimiter)
                 {
-                    percent++;
-                    textPercent += encryptionMessage.GetMessageSize() / 100.0;
-                    parentForm.SetCurrentProgress(percent);
+                    cachedLimiter += stegoMessage.GetTotalBitCount() / 20.0;
+                    parentForm.SetCurrentProgress((int)Math.Round(stegoMessage.GetCurrentBit() / (stegoMessage.GetTotalBitCount() / 100.0)));
                 }
             }
 
             parentForm.SetCurrentProgress(100);
-            var outputFileName = outputPath + "\\PITTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".png";
+            var outputFileName = GenerateEncryptionOutputFileName();
             picture.Save(outputFileName);
-            Console.WriteLine(String.Format("New file created. File: {0}", outputFileName));
 
             return outputFileName;
         }
@@ -267,11 +260,12 @@ namespace DiplRad
         //
         // Main function used for decryption.
         //
-        public override string DecryptPicture(string picturePath, string outputPath)
+        internal override string DecryptPicture(StegoOptions stegoOptions)
         {
+            Reset();
             List<Boolean> messageInBits =  new List<Boolean>();
 
-            picture = new Bitmap(picturePath);
+            picture = new Bitmap(ioPaths.ImagePath);
 
             // First 8 pixels are used to code message length
             for (int i = 0; i < 8; i++)
@@ -282,15 +276,14 @@ namespace DiplRad
                 messageInBits.AddRange(CalculateMessageLengthFromPixel(pixelColor.G));
             }
 
-            messageSize = Helper.CreateLongFromBoolArray(messageInBits) * 8;
+            messageSize = Helper.CreateLongFromBoolArray(messageInBits);
 
             // Determine which channel will be indicator.
             DelegateColorTypesToChannels();
             messageInBits.Clear();
 
-            int percent = 0;
             ulong currentBit = 0;
-            double textPercent = messageSize / 100.0;
+            double cachedLimiter = messageSize / 20.0;
             while (currentBit < messageSize)
             {
                 Color currentPixel = GetNextPixel();
@@ -298,12 +291,9 @@ namespace DiplRad
                 bool firstChannelPopulated = (GetPixelColor(currentPixel, IndicatorChannel) & 0x02) != 0;
                 bool secondChannelPopulated = (GetPixelColor(currentPixel, IndicatorChannel) & 0x01) != 0;
 
-                int firstChannelColor = 0;
-                int secondChannelColor = 0;
-
                 if (firstChannelPopulated)
                 {
-                    firstChannelColor = GetPixelColor(currentPixel, FirstChannel);
+                    int firstChannelColor = GetPixelColor(currentPixel, FirstChannel);
                     messageInBits.Add((firstChannelColor & 0x02) != 0);
                     currentBit++;
 
@@ -313,13 +303,13 @@ namespace DiplRad
                     }
 
                     messageInBits.Add((firstChannelColor & 0x01) != 0);
-                    currentBit ++;
+                    currentBit++;
                 }
 
                 if (secondChannelPopulated && currentBit < messageSize)
                 {
 
-                    secondChannelColor = GetPixelColor(currentPixel, SecondChannel);
+                    int secondChannelColor = GetPixelColor(currentPixel, SecondChannel);
                     messageInBits.Add((secondChannelColor & 0x02) != 0);
                     currentBit++;
 
@@ -332,19 +322,65 @@ namespace DiplRad
                     currentBit++;
                 }
 
-                if (currentBit >= textPercent)
+                if (currentBit >= cachedLimiter)
                 {
-                    percent++;
-                    textPercent += messageSize / 100.0;
-                    parentForm.SetCurrentProgress(percent);
+                    cachedLimiter += messageSize / 20.0;
+                    parentForm.SetCurrentProgress((int)Math.Round(currentBit / (cachedLimiter / 100.0)));
                 }
             }
 
             parentForm.SetCurrentProgress(100);
-            var outputFileName = outputPath + "\\PITDecryptionTest_" + DateTime.UtcNow.ToFileTimeUtc() + ".txt";
-            File.WriteAllText(outputFileName, Helper.CreateStringFromBoolArray(messageInBits));
-            return outputFileName;
+            return GenerateDecryptionOutput(messageInBits, stegoOptions);
         }
+
+        public override void PopulateChart(Chart chart, Chart PercentChart, string bmPath, out double max)
+        {
+            Reset();
+            max = 0;
+            picture = new Bitmap(bmPath);
+            int[] histogram_r = new int[256];
+            int[] histogram_b = new int[256];
+            int[] histogram_g = new int[256];
+
+            int percent = 0;
+            uint pixelCount = (uint)(picture.Width * picture.Height);
+            double textPercent = pixelCount / 100.0;
+            for (int pixelsProcessed = 0; pixelsProcessed < pixelCount; pixelsProcessed++)
+            {
+                Color currentPixel = GetNextPixel();
+
+                histogram_r[currentPixel.R]++;
+                histogram_b[currentPixel.B]++;
+                histogram_g[currentPixel.G]++;
+
+                if (pixelsProcessed >= textPercent)
+                {
+                    double probability = CalculateProbabilityAtPoint(histogram_r);
+                    PercentChart.Series["RedProbability"].Points.AddXY(percent, probability * 100);
+
+                    probability = CalculateProbabilityAtPoint(histogram_b);
+                    PercentChart.Series["BlueProbability"].Points.AddXY(percent, probability * 100);
+
+                    probability = CalculateProbabilityAtPoint(histogram_g);
+                    PercentChart.Series["GreenProbability"].Points.AddXY(percent, probability * 100);
+
+                    percent++;
+                    textPercent += pixelCount / 100.0;
+                    parentForm.SetCurrentProgress(percent);
+                }
+            }
+
+            for (int i = 0; i < histogram_r.Length; i++)
+            {
+                chart.Series["RED"].Points.AddXY(i, histogram_r[i]);
+                chart.Series["BLUE"].Points.AddXY(i, histogram_b[i]);
+                chart.Series["GREEN"].Points.AddXY(i, histogram_g[i]);
+                max = Math.Max(max, histogram_r[i]);
+                max = Math.Max(max, histogram_b[i]);
+                max = Math.Max(max, histogram_g[i]);
+            }
+        }
+
         #endregion Methods
     }
 }

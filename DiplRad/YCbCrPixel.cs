@@ -8,13 +8,6 @@ namespace DiplRad
         internal double _Cb;
         internal double _Cr;
 
-        public YCbCrPixel(int yComp, int cbComp, int crComp)
-        {
-            _y = yComp;
-            _Cb = cbComp;
-            _Cr = crComp;
-        }
-
         public YCbCrPixel(Color color)
         {
             _y = 0.299 * color.R + 0.587 * color.G + 0.114 * color.B - 128;

@@ -37,5 +37,63 @@ namespace DiplRad
             prevForm.Show();
             this.Dispose();
         }
+
+        private void Red_CheckedChanged(object sender, EventArgs e)
+        {
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["RED"].Enabled = true;
+            this.chart2.Series["RED"].Enabled = true;
+            this.chart3.Series["RedProbability"].Enabled = true;
+            this.chart4.Series["RedProbability"].Enabled = true;
+        }
+
+        private void Blue_CheckedChanged(object sender, EventArgs e)
+        {
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["BLUE"].Enabled = true;
+            this.chart2.Series["BLUE"].Enabled = true;
+            this.chart3.Series["BlueProbability"].Enabled = true;
+            this.chart4.Series["BlueProbability"].Enabled = true;
+        }
+
+        private void Green_CheckedChanged(object sender, EventArgs e)
+        {
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["GREEN"].Enabled = true;
+            this.chart2.Series["GREEN"].Enabled = true;
+            this.chart3.Series["GreenProbability"].Enabled = true;
+            this.chart4.Series["GreenProbability"].Enabled = true;
+        }
+        private void None_CheckedChanged(object sender, EventArgs e)
+        {
+            this.chart1.Series["RED"].Enabled = false;
+            this.chart2.Series["RED"].Enabled = false;
+            this.chart3.Series["RedProbability"].Enabled = false;
+            this.chart4.Series["RedProbability"].Enabled = false;
+            this.chart1.Series["BLUE"].Enabled = false;
+            this.chart2.Series["BLUE"].Enabled = false;
+            this.chart3.Series["BlueProbability"].Enabled = false;
+            this.chart4.Series["BlueProbability"].Enabled = false;
+            this.chart1.Series["GREEN"].Enabled = false;
+            this.chart2.Series["GREEN"].Enabled = false;
+            this.chart3.Series["GreenProbability"].Enabled = false;
+            this.chart4.Series["GreenProbability"].Enabled = false;
+        }
+
+        private void All_CheckedChanged(object sender, EventArgs e)
+        {
+            this.chart1.Series["RED"].Enabled = true;
+            this.chart2.Series["RED"].Enabled = true;
+            this.chart3.Series["RedProbability"].Enabled = true;
+            this.chart4.Series["RedProbability"].Enabled = true;
+            this.chart1.Series["BLUE"].Enabled = true;
+            this.chart2.Series["BLUE"].Enabled = true;
+            this.chart3.Series["BlueProbability"].Enabled = true;
+            this.chart4.Series["BlueProbability"].Enabled = true;
+            this.chart1.Series["GREEN"].Enabled = true;
+            this.chart2.Series["GREEN"].Enabled = true;
+            this.chart3.Series["GreenProbability"].Enabled = true;
+            this.chart4.Series["GreenProbability"].Enabled = true;
+        }
     }
 }

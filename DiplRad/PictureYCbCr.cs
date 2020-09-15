@@ -8,16 +8,6 @@ namespace DiplRad
         public int width, height;
         public int displayWidth, displayHeight;
 
-        public int GetDisplayWidth()
-        {
-            return displayWidth;
-        }
-
-        public int GetDisplayHeight()
-        {
-            return displayHeight;
-        }
-
         public PictureYCbCr(Bitmap picture)
         {
             this.displayHeight = picture.Height;

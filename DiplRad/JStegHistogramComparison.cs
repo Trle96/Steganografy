@@ -40,26 +40,60 @@ namespace DiplRad
 
         private void Y_CheckedChanged(object sender, EventArgs e)
         {
-            this.chart1.Series["Y"].Enabled = Y.Checked;
-            this.chart2.Series["Y"].Enabled = Y.Checked;
-            this.chart3.Series["Y"].Enabled = Y.Checked;
-            this.chart4.Series["Y"].Enabled = Y.Checked;
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["Y"].Enabled = true;
+            this.chart2.Series["Y"].Enabled = true;
+            this.chart3.Series["Y"].Enabled = true;
+            this.chart4.Series["Y"].Enabled = true;
         }
 
         private void Cr_CheckedChanged(object sender, EventArgs e)
         {
-            this.chart1.Series["Cr"].Enabled = Cr.Checked;
-            this.chart2.Series["Cr"].Enabled = Cr.Checked;
-            this.chart3.Series["Cr"].Enabled = Cr.Checked;
-            this.chart4.Series["Cr"].Enabled = Cr.Checked;
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["Cr"].Enabled = true;
+            this.chart2.Series["Cr"].Enabled = true;
+            this.chart3.Series["Cr"].Enabled = true;
+            this.chart4.Series["Cr"].Enabled = true;
         }
 
         private void Cb_CheckedChanged(object sender, EventArgs e)
         {
-            this.chart1.Series["Cb"].Enabled = Cb.Checked;
-            this.chart2.Series["Cb"].Enabled = Cb.Checked;
-            this.chart3.Series["Cb"].Enabled = Cb.Checked;
-            this.chart4.Series["Cb"].Enabled = Cb.Checked;
+            None_CheckedChanged(sender, e);
+            this.chart1.Series["Cb"].Enabled = true;
+            this.chart2.Series["Cb"].Enabled = true;
+            this.chart3.Series["Cb"].Enabled = true;
+            this.chart4.Series["Cb"].Enabled = true;
+        }
+        private void None_CheckedChanged(object sender, EventArgs e)
+        {
+            this.chart1.Series["Y"].Enabled = false;
+            this.chart2.Series["Y"].Enabled = false;
+            this.chart3.Series["Y"].Enabled = false;
+            this.chart4.Series["Y"].Enabled = false;
+            this.chart1.Series["Cr"].Enabled = false;
+            this.chart2.Series["Cr"].Enabled = false;
+            this.chart3.Series["Cr"].Enabled = false;
+            this.chart4.Series["Cr"].Enabled = false;
+            this.chart1.Series["Cb"].Enabled = false;
+            this.chart2.Series["Cb"].Enabled = false;
+            this.chart3.Series["Cb"].Enabled = false;
+            this.chart4.Series["Cb"].Enabled = false;
+        }
+
+        private void All_CheckedChanged(object sender, EventArgs e)
+        {
+            this.chart1.Series["Y"].Enabled = true;
+            this.chart2.Series["Y"].Enabled = true;
+            this.chart3.Series["Y"].Enabled = true;
+            this.chart4.Series["Y"].Enabled = true;
+            this.chart1.Series["Cr"].Enabled = true;
+            this.chart2.Series["Cr"].Enabled = true;
+            this.chart3.Series["Cr"].Enabled = true;
+            this.chart4.Series["Cr"].Enabled = true;
+            this.chart1.Series["Cb"].Enabled = true;
+            this.chart2.Series["Cb"].Enabled = true;
+            this.chart3.Series["Cb"].Enabled = true;
+            this.chart4.Series["Cb"].Enabled = true;
         }
     }
 }

@@ -81,24 +81,6 @@ namespace DiplRad
                              .ToArray();
         }
 
-        public static string CreateStringFromBoolArray(List<bool> boolList)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < boolList.Count / 8; i++)
-            {
-                char newChar = (char)0;
-                for (int j = 0; j < 8; j++)
-                {
-                    newChar <<= 1;
-                    newChar |= boolList[i * 8 + j] ? (char)0x1 : (char)0x0;
-                }
-
-                stringBuilder.Append(newChar);
-            }
-
-            return stringBuilder.ToString();
-        }
-
         public static uint GetMessageSizeFromBoolArray(List<bool> boolList)
         {
             uint ret = 0;

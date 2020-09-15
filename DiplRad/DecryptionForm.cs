@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static DiplRad.Encryptor;
 
 namespace DiplRad
 {
@@ -23,7 +24,7 @@ namespace DiplRad
             InitializeComponent();
             if (encryptor is JstegEncryptor)
             {
-                this.openFileDialog2.Filter = "jpeg files (*.jpeg)|*.jepg| jpg files (*.jpg)|*.jpg";
+                this.openFileDialog2.Filter = " jpg files (*.jpg)|*.jpg| jpeg files (*.jpeg)|*.jpeg";
             }
             else
             {
@@ -38,7 +39,7 @@ namespace DiplRad
 
         private void openFileDialog2_FileOk(object sender, CancelEventArgs e)
         {
-            textBox2.Text = openFileDialog2.FileName;
+            browseImageTextBox.Text = openFileDialog2.FileName;
             picturePath = openFileDialog2.FileName;
         }
 
@@ -49,7 +50,7 @@ namespace DiplRad
 
             if (result == DialogResult.OK)
             {
-                textBox3.Text = folderBrowserDialog1.SelectedPath;
+                browseFolderTextBox.Text = folderBrowserDialog1.SelectedPath;
                 outputPath = folderBrowserDialog1.SelectedPath;
             }
         }
@@ -58,71 +59,91 @@ namespace DiplRad
         {
             if (picturePath != null && outputPath != null)
             {
-                if (numericUpDown1.Enabled)
-                {
-                    encryptor.SetLSBCount((int)numericUpDown1.Value);
-                }
-
-                Thread t = new Thread(new ThreadStart(Test));
+                Thread t = new Thread(new ThreadStart(DecryptionWorker));
                 t.Priority = ThreadPriority.Highest;
                 t.Start();
             }
             else
             {
-                label1.ForeColor = Color.Red;
-                label1.Text = String.Format("Please provide all the required fields");
+                resultOutputLabel.ForeColor = Color.Red;
+                resultOutputLabel.Text = String.Format("Please provide all the required fields");
             }
         }
 
-        private void Test()
+        private void DecryptionWorker()
         {
-            encryptor.SetParentForm(this);
-            outputDecryptedFilename = encryptor.DecryptPicture(picturePath, outputPath);
-            label1.ForeColor = Color.Green;
+            try
+            {
+                encryptor.SetParentForm(this);
+                IOPaths iOPath = new IOPaths(picturePath, null, outputPath);
+                StegoOptions encryptionOptions = new StegoOptions(
+                    loopMessage: false,
+                    compressMessage: compressedMessageCheckBox.Checked,
+                    encryptMessage: encryptMessageCheckBox.Checked,
+                    lsbUsed: (int)lsbCountUsed.Value);
 
-            this.Invoke(new Action(() => {
-                label1.Text = String.Format("Saved output txt as {0}", outputDecryptedFilename);
-                button6.Enabled = true;
-            }));
+                outputDecryptedFilename = encryptor.DecryptPicture(iOPath, encryptionOptions);
+
+                this.Invoke(new Action(() =>
+                {
+                    resultOutputLabel.ForeColor = Color.Green;
+                    resultOutputLabel.Text = String.Format("Saved output txt as {0}", outputDecryptedFilename);
+                    showEncryptedTextButton.Enabled = true;
+                }));
+            }
+            catch (Exception e)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    progressBar.Value = 0;
+                    resultOutputLabel.ForeColor = Color.Red;
+                    resultOutputLabel.Text = e.Message;
+                    showEncryptedTextButton.Enabled = false;
+                }));
+            }
         }
 
-        private void EncryptionForm_Load(object sender, EventArgs e)
+        private void DecryptionForm_Load(object sender, EventArgs e)
         {
             if (encryptor is PITEncryptor)
             {
-                numericUpDown1.Enabled = false;
-                numericUpDown1.Value = 2;
-                label6.Text = "Using PIT decryption method";
+                lsbCountUsed.Enabled = false;
+                lsbCountUsed.Value = 2;
+                titleLabel.Text = "Using PIT encryption method";
+            }
+            else if (encryptor is LSBEncryptor)
+            {
+                lsbCountUsed.Enabled = true;
+                titleLabel.Text = "Using LSB encryption method";
             }
             else
             {
-                numericUpDown1.Enabled = true;
-                numericUpDown1.Value = 1;
-                if (encryptor is LSBEncryptor)
-                {
-                    label6.Text = "Using LSB decryption method";
-                }
-                else
-                {
-                    label6.Text = "Using JSTEG decryption method";
-                }
+                lsbCountUsed.Enabled = false;
+                lsbCountUsed.Value = 1;
+                titleLabel.Text = "Using JSTEG encryption method";
             }
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void ImageComparisonButton_Click(object sender, EventArgs e)
         {
-            var t = new ImageComparison(this, picturePath, outputDecryptedFilename);
-            t.StartPosition = FormStartPosition.Manual;
-            t.Location = this.Location;
+            var t = new ImageComparison(this, picturePath, outputDecryptedFilename)
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = this.Location
+            };
+
             this.Hide();
             t.Show();
         }
 
         private void OutputTextFormClicked(object sender, EventArgs e)
         {
-            var t = new OutputTextForm(this, outputDecryptedFilename);
-            t.StartPosition = FormStartPosition.Manual;
-            t.Location = this.Location;
+            var t = new OutputTextForm(this, outputDecryptedFilename)
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = this.Location
+            };
+
             this.Hide();
             t.Show();
         }

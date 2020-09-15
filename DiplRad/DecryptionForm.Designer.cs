@@ -28,60 +28,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.browseImageTextBox = new System.Windows.Forms.TextBox();
+            this.browseImageButton = new System.Windows.Forms.Button();
+            this.browseFolderButton = new System.Windows.Forms.Button();
+            this.browseFolderTextBox = new System.Windows.Forms.TextBox();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.browseImageLabel = new System.Windows.Forms.Label();
+            this.browseFolderLabel = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button7 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.button6 = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.decryptStegoImageButton = new System.Windows.Forms.Button();
+            this.resultOutputLabel = new System.Windows.Forms.Label();
+            this.titleLabel = new System.Windows.Forms.Label();
+            this.showEncryptedTextButton = new System.Windows.Forms.Button();
+            this.encryptMessageLabel = new System.Windows.Forms.Label();
+            this.encryptMessageCheckBox = new System.Windows.Forms.CheckBox();
+            this.advancedOptions = new System.Windows.Forms.GroupBox();
+            this.compressedMessageLabel = new System.Windows.Forms.Label();
+            this.compressedMessageCheckBox = new System.Windows.Forms.CheckBox();
+            this.lsbCountUsed = new System.Windows.Forms.NumericUpDown();
+            this.lsbCountUsedLabel = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.lsbCountUsed)).BeginInit();
             this.SuspendLayout();
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(15, 64);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(411, 20);
-            this.textBox2.TabIndex = 3;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(432, 63);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 21);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "Browse files";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.OpenSelectPictureFileDialogClicked);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(432, 122);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 20);
-            this.button3.TabIndex = 6;
-            this.button3.Text = "Browse files";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.SelectOutputPathClicked);
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(15, 122);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ReadOnly = true;
-            this.textBox3.Size = new System.Drawing.Size(411, 20);
-            this.textBox3.TabIndex = 5;
             // 
             // openFileDialog2
             // 
@@ -89,161 +57,232 @@
             this.openFileDialog2.Title = "Select cover image";
             this.openFileDialog2.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog2_FileOk);
             // 
-            // label3
+            // titleLabel
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Arial", 10F);
-            this.label3.Location = new System.Drawing.Point(12, 45);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(233, 16);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Select a picture you want to decrypt";
+            this.titleLabel.AutoSize = true;
+            this.titleLabel.Font = new System.Drawing.Font("Calibri", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.titleLabel.Location = new System.Drawing.Point(10, 10);
+            this.titleLabel.Name = "TitleLabel";
+            this.titleLabel.Size = new System.Drawing.Size(200, 30);
+            this.titleLabel.TabIndex = 18;
+            this.titleLabel.Text = "TitleLabel";
             // 
-            // label4
+            // BrowseImageLabel
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Arial", 10F);
-            this.label4.Location = new System.Drawing.Point(12, 103);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(143, 16);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "Select an output path";
+            this.browseImageLabel.AutoSize = true;
+            this.browseImageLabel.Font = new System.Drawing.Font("Calibri", 10F);
+            this.browseImageLabel.Location = new System.Drawing.Point(10, 50);
+            this.browseImageLabel.Name = "BrowseImageLabel";
+            this.browseImageLabel.Size = new System.Drawing.Size(200, 15);
+            this.browseImageLabel.TabIndex = 8;
+            this.browseImageLabel.Text = "Select a picture you want to decrypt";
+            // 
+            // BrowseImageTextBox
+            // 
+            this.browseImageTextBox.Location = new System.Drawing.Point(10, 70);
+            this.browseImageTextBox.Name = "BrowseImageTextBox";
+            this.browseImageTextBox.ReadOnly = true;
+            this.browseImageTextBox.Size = new System.Drawing.Size(300, 20);
+            this.browseImageTextBox.TabIndex = 3;
+            // 
+            // BrowseImageButton
+            // 
+            this.browseImageButton.Location = new System.Drawing.Point(315, 70);
+            this.browseImageButton.Name = "BrowseImageButton";
+            this.browseImageButton.Size = new System.Drawing.Size(75, 20);
+            this.browseImageButton.TabIndex = 4;
+            this.browseImageButton.Text = "Browse files";
+            this.browseImageButton.UseVisualStyleBackColor = true;
+            this.browseImageButton.Click += new System.EventHandler(this.OpenSelectPictureFileDialogClicked);
+            // 
+            // BrowseFolderLabel
+            // 
+            this.browseFolderLabel.AutoSize = true;
+            this.browseFolderLabel.Font = new System.Drawing.Font("Calibri", 10F);
+            this.browseFolderLabel.Location = new System.Drawing.Point(10, 100);
+            this.browseFolderLabel.Name = "BrowseFolderLabel";
+            this.browseFolderLabel.Size = new System.Drawing.Size(200, 15);
+            this.browseFolderLabel.TabIndex = 9;
+            this.browseFolderLabel.Text = "Select an output path";
+            // 
+            // BrowseFolderTextBox
+            // 
+            this.browseFolderTextBox.Location = new System.Drawing.Point(10, 120);
+            this.browseFolderTextBox.Name = "BrowseFolderTextBox";
+            this.browseFolderTextBox.ReadOnly = true;
+            this.browseFolderTextBox.Size = new System.Drawing.Size(300, 20);
+            this.browseFolderTextBox.TabIndex = 5;
+            // 
+            // BrowseFolderButton
+            // 
+            this.browseFolderButton.Location = new System.Drawing.Point(315, 120);
+            this.browseFolderButton.Name = "BrowseFolderButton";
+            this.browseFolderButton.Size = new System.Drawing.Size(75, 20);
+            this.browseFolderButton.TabIndex = 6;
+            this.browseFolderButton.Text = "Browse files";
+            this.browseFolderButton.UseVisualStyleBackColor = true;
+            this.browseFolderButton.Click += new System.EventHandler(this.SelectOutputPathClicked);
+            // 
+            // AdvancedOptions
+            // 
+            this.advancedOptions.Controls.Add(this.lsbCountUsedLabel);
+            this.advancedOptions.Controls.Add(this.lsbCountUsed);
+            this.advancedOptions.Controls.Add(this.encryptMessageLabel);
+            this.advancedOptions.Controls.Add(this.encryptMessageCheckBox);
+            this.advancedOptions.Controls.Add(this.compressedMessageLabel);
+            this.advancedOptions.Controls.Add(this.compressedMessageCheckBox);
+            this.advancedOptions.Location = new System.Drawing.Point(10, 150);
+            this.advancedOptions.Name = "AdvancedOptions";
+            this.advancedOptions.Size = new System.Drawing.Size(375, 110);
+            this.advancedOptions.TabIndex = 2;
+            this.advancedOptions.TabStop = false;
+            this.advancedOptions.Text = "Advanced Options";
+            // 
+            // lsbCountUsed
+            // 
+            this.lsbCountUsed.Location = new System.Drawing.Point(10, 25);
+            this.lsbCountUsed.Font = new System.Drawing.Font("Arial", 8F);
+            this.lsbCountUsed.Maximum = 7;
+            this.lsbCountUsed.Minimum = 1;
+            this.lsbCountUsed.Name = "lsbCountUsed";
+            this.lsbCountUsed.ReadOnly = true;
+            this.lsbCountUsed.Size = new System.Drawing.Size(50, 5);
+            this.lsbCountUsed.TabIndex = 16;
+            this.lsbCountUsed.Value = 1;
+            // 
+            // lsbCountUsedLabel
+            // 
+            this.lsbCountUsedLabel.AutoSize = true;
+            this.lsbCountUsedLabel.Font = new System.Drawing.Font("Arial", 8F);
+            this.lsbCountUsedLabel.Location = new System.Drawing.Point(60, 27);
+            this.lsbCountUsedLabel.Name = "lsbCountUsedLabel";
+            this.lsbCountUsedLabel.Size = new System.Drawing.Size(400, 10);
+            this.lsbCountUsedLabel.TabIndex = 17;
+            this.lsbCountUsedLabel.Text = "Number of least significant bits that will be used";
+            // 
+            // CompressedMessageCheckBox
+            // 
+            this.compressedMessageCheckBox.Location = new System.Drawing.Point(10, 54);
+            this.compressedMessageCheckBox.Name = "CompressedMessageCheckBox";
+            this.compressedMessageCheckBox.Size = new System.Drawing.Size(75, 20);
+            this.compressedMessageCheckBox.TabIndex = 16;
+            this.compressedMessageCheckBox.Checked = false;
+            // 
+            // CompressedMessageLabel
+            // 
+            this.compressedMessageLabel.AutoSize = true;
+            this.compressedMessageLabel.Font = new System.Drawing.Font("Arial", 8F);
+            this.compressedMessageLabel.Location = new System.Drawing.Point(25, 56);
+            this.compressedMessageLabel.Name = "CompressedMessageLabel";
+            this.compressedMessageLabel.Size = new System.Drawing.Size(400, 20);
+            this.compressedMessageLabel.TabIndex = 17;
+            this.compressedMessageLabel.Text = "Check if message is compressed before embedding";
+            // 
+            // EncryptMessageCheckBox
+            // 
+            this.encryptMessageCheckBox.Location = new System.Drawing.Point(10, 84);
+            this.encryptMessageCheckBox.Name = "EncryptMessageCheckBox";
+            this.encryptMessageCheckBox.Size = new System.Drawing.Size(75, 20);
+            this.encryptMessageCheckBox.TabIndex = 16;
+            this.encryptMessageCheckBox.Checked = false;
+            // 
+            // EncryptMessageLabel
+            // 
+            this.encryptMessageLabel.AutoSize = true;
+            this.encryptMessageLabel.Font = new System.Drawing.Font("Arial", 8F);
+            this.encryptMessageLabel.Location = new System.Drawing.Point(25, 86);
+            this.encryptMessageLabel.Name = "EncryptMessageLabel";
+            this.encryptMessageLabel.Size = new System.Drawing.Size(400, 20);
+            this.encryptMessageLabel.TabIndex = 17;
+            this.encryptMessageLabel.Text = "Check if message is encrypted before embedding";
+            // 
+            // DecryptStegoImageButton
+            // 
+            this.decryptStegoImageButton.Location = new System.Drawing.Point(95, 280);
+            this.decryptStegoImageButton.Name = "DecryptStegoImageButton";
+            this.decryptStegoImageButton.Size = new System.Drawing.Size(100, 50);
+            this.decryptStegoImageButton.TabIndex = 14;
+            this.decryptStegoImageButton.Text = "Decrypt Stego Image";
+            this.decryptStegoImageButton.UseVisualStyleBackColor = true;
+            this.decryptStegoImageButton.Click += new System.EventHandler(this.DecryptStegoImageClicked);
+            // 
+            // ShowEncryptedTextButton
+            // 
+            this.showEncryptedTextButton.Enabled = false;
+            this.showEncryptedTextButton.Location = new System.Drawing.Point(205, 280);
+            this.showEncryptedTextButton.Name = "ShowEncryptedTextButton";
+            this.showEncryptedTextButton.Size = new System.Drawing.Size(100, 50);
+            this.showEncryptedTextButton.TabIndex = 13;
+            this.showEncryptedTextButton.Text = "Show encrypted text";
+            this.showEncryptedTextButton.UseVisualStyleBackColor = true;
+            this.showEncryptedTextButton.Click += new System.EventHandler(this.OutputTextFormClicked);
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(9, 303);
+            this.progressBar.Location = new System.Drawing.Point(10, 350);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(495, 23);
+            this.progressBar.Size = new System.Drawing.Size(375, 20);
             this.progressBar.TabIndex = 10;
             // 
-            // button4
+            // ResultOutputLabel
             // 
-            this.button4.Location = new System.Drawing.Point(9, 247);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(98, 50);
-            this.button4.TabIndex = 11;
-            this.button4.Text = "Go back to previous menu";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.GoBackToPreviousMenu);
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(406, 246);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(98, 51);
-            this.button7.TabIndex = 14;
-            this.button7.Text = "Decrypt Stego Image";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.DecryptStegoImageClicked);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.Green;
-            this.label1.Location = new System.Drawing.Point(12, 329);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(0, 13);
-            this.label1.TabIndex = 15;
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(432, 163);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            7,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.ReadOnly = true;
-            this.numericUpDown1.Size = new System.Drawing.Size(72, 20);
-            this.numericUpDown1.TabIndex = 16;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Arial", 10F);
-            this.label5.Location = new System.Drawing.Point(12, 163);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(355, 16);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Select number of least significant bits that will be used: ";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(8, 9);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(64, 22);
-            this.label6.TabIndex = 18;
-            this.label6.Text = "label6";
-            // 
-            // button6
-            // 
-            this.button6.Enabled = false;
-            this.button6.Location = new System.Drawing.Point(302, 247);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(98, 50);
-            this.button6.TabIndex = 13;
-            this.button6.Text = "Show encrypted text";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.OutputTextFormClicked);
+            this.resultOutputLabel.AutoSize = false;
+            this.resultOutputLabel.ForeColor = System.Drawing.Color.Green;
+            this.resultOutputLabel.Location = new System.Drawing.Point(10, 380);
+            this.resultOutputLabel.Name = "ResultOutputLabel";
+            this.resultOutputLabel.Size = new System.Drawing.Size(300, 20);
+            this.resultOutputLabel.TabIndex = 15;
+            this.resultOutputLabel.Font = new System.Drawing.Font("Calibri", 7F);
             // 
             // DecryptionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(516, 360);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.numericUpDown1);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button7);
-            this.Controls.Add(this.button6);
-            this.Controls.Add(this.button4);
+            this.ClientSize = new System.Drawing.Size(395, 420);
+            this.Controls.Add(this.titleLabel);
+            this.Controls.Add(this.resultOutputLabel);
+            this.Controls.Add(this.decryptStegoImageButton);
+            this.Controls.Add(this.showEncryptedTextButton);
             this.Controls.Add(this.progressBar);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.browseFolderLabel);
+            this.Controls.Add(this.browseImageLabel);
+            this.Controls.Add(this.browseFolderButton);
+            this.Controls.Add(this.browseFolderTextBox);
+            this.Controls.Add(this.browseImageButton);
+            this.Controls.Add(this.browseImageTextBox);
+            this.Controls.Add(this.advancedOptions);
+            this.advancedOptions.ResumeLayout(false);
             this.Cursor = System.Windows.Forms.Cursors.SizeAll;
             this.Name = "DecryptionForm";
-            this.Text = "EncryptionForm";
-            this.Load += new System.EventHandler(this.EncryptionForm_Load);
+            this.Text = "Decryption Form";
+            this.Load += new System.EventHandler(this.DecryptionForm_Load);
             this.Disposed += new System.EventHandler(this.GoBackToPreviousMenu);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lsbCountUsed)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
         }
 
         #endregion
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox browseImageTextBox;
+        private System.Windows.Forms.Button browseImageButton;
+        private System.Windows.Forms.Button browseFolderButton;
+        private System.Windows.Forms.TextBox browseFolderTextBox;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Label browseImageLabel;
+        private System.Windows.Forms.Label browseFolderLabel;
+        private System.Windows.Forms.Button decryptStegoImageButton;
+        private System.Windows.Forms.Label resultOutputLabel;
+        private System.Windows.Forms.Label titleLabel;
+        private System.Windows.Forms.Button showEncryptedTextButton;
+        private System.Windows.Forms.Label compressedMessageLabel;
+        private System.Windows.Forms.CheckBox compressedMessageCheckBox;
+        private System.Windows.Forms.Label encryptMessageLabel;
+        private System.Windows.Forms.CheckBox encryptMessageCheckBox;
+        private System.Windows.Forms.GroupBox advancedOptions;
+        private System.Windows.Forms.NumericUpDown lsbCountUsed;
+        private System.Windows.Forms.Label lsbCountUsedLabel;
     }
 }

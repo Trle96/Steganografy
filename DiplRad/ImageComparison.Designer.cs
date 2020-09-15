@@ -49,31 +49,29 @@ namespace DiplRad
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.AutoScroll = true;
             this.splitContainer1.Panel1.Controls.Add(this.pictureBox1);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.AutoScroll = true;
             this.splitContainer1.Panel2.Controls.Add(this.pictureBox2);
-            this.splitContainer1.Size = new System.Drawing.Size(1408, 789);
-            this.splitContainer1.SplitterDistance = 693;
+            this.splitContainer1.Size = new System.Drawing.Size(991, 404);
+            this.splitContainer1.SplitterDistance = 413;
             this.splitContainer1.TabIndex = 0;
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(594, 789);
+            this.pictureBox1.Size = new System.Drawing.Size(413, 404);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox2.Location = new System.Drawing.Point(0, 0);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(929, 783);
+            this.pictureBox2.Size = new System.Drawing.Size(574, 404);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
@@ -82,9 +80,10 @@ namespace DiplRad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1408, 789);
+            this.AutoSize = true;
+            this.ClientSize = new System.Drawing.Size(991, 404);
             this.Controls.Add(this.splitContainer1);
-            this.Name = "ImageComparison";
+            this.Name = "Image Comparison";
             this.Text = "ImageComparison";
             this.Load += new System.EventHandler(this.ImageComparison_Load);
             this.Disposed += new System.EventHandler(this.ImageComparison_Dispose);
@@ -97,6 +96,8 @@ namespace DiplRad
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
+            this.MaximizeBox = false;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 
         }
 
