@@ -81,7 +81,7 @@ namespace DiplRad
         {
             int numOfCategories;
             double chiSquare = CalculateHiSqure(histogram, out numOfCategories);
-            double temp = (1 - DoubleExponentialTransformation.Integrate(x => ChiSquared.PDF(numOfCategories, x), 0, chiSquare, 1e-5));
+            double temp = numOfCategories == 0 ? 0 : (1 - DoubleExponentialTransformation.Integrate(x => ChiSquared.PDF(numOfCategories, x), 0, chiSquare, 1e-5));
             temp = temp < 0.01 ? 0 : temp;
             temp = temp > 0.99 ? 1 : temp;
             return temp;

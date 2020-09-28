@@ -29,10 +29,18 @@ namespace DiplRad
         {
         }
 
-        internal void Reset()
+        internal void Reset(bool shouldResetToZero = false)
         {
-            currentXCoord = 1;
-            currentYCoord = 0;
+            if (shouldResetToZero)
+            {
+                currentXCoord = 0;
+                currentYCoord = -1;
+            }
+            else
+            {
+                currentXCoord = 1;
+                currentYCoord = 0;
+            }
         }
 
         internal override void SetStegoMessage(string messagePath, StegoOptions stegoOptions)
@@ -77,7 +85,6 @@ namespace DiplRad
                 throw new Exception("Picture is not big enough for this message");
             }
 
-            
             return picture.GetPixel(currentXCoord, currentYCoord);
         }
 
@@ -335,7 +342,7 @@ namespace DiplRad
 
         public override void PopulateChart(Chart chart, Chart PercentChart, string bmPath, out double max)
         {
-            Reset();
+            Reset(true);
             max = 0;
             picture = new Bitmap(bmPath);
             int[] histogram_r = new int[256];
